@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useScreenshotProtection, disableCopyPaste } from '../services/security/ScreenshotProtection';
 import { MOCK_MESSAGES } from '../services/mock/MockData';
 import { IconButton } from '../components/common/IconButton';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const ChatScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const { theme, isDark } = useTheme();
   const { groupName, chatType } = route.params;
 
   const [messages, setMessages] = useState(MOCK_MESSAGES);
   const [inputText, setInputText] = useState('');
   const [showHeader, setShowHeader] = useState(true);
 
-  // Enable screenshot protection for chat screen
   useScreenshotProtection(true);
 
   const handleSend = () => {
@@ -37,49 +38,56 @@ export const ChatScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-military-dark">
+    <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
       {/* Header */}
-      <View className="bg-military-navy px-4 pt-12 pb-4 shadow-lg">
+      <View
+        className="px-4 pt-12 pb-4 shadow-lg"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         <View className="flex-row items-center">
-          {/* Back Button */}
           <IconButton
             name="arrow-back"
             size={24}
-            color="#ffffff"
+            color={theme.colors.textPrimary}
             onPress={() => navigation.goBack()}
           />
 
-          {/* Avatar & Name */}
           <TouchableOpacity
             className="flex-row items-center flex-1 ml-3"
             onPress={() => setShowHeader(!showHeader)}
           >
-            <View className="w-10 h-10 rounded-full bg-military-blue items-center justify-center mr-3">
+            <View
+              className="w-10 h-10 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: theme.colors.cardBg }}
+            >
               {chatType === 'group' ? (
-                <MaterialIcons name="groups" size={24} color="#556B2F" />
+                <MaterialIcons name="groups" size={24} color={theme.colors.accent} />
               ) : (
-                <Ionicons name="person" size={20} color="#556B2F" />
+                <Ionicons name="person" size={20} color={theme.colors.accent} />
               )}
             </View>
             <View className="flex-1">
-              <Text className="text-white text-base font-semibold" numberOfLines={1}>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: theme.colors.textPrimary }}
+                numberOfLines={1}
+              >
                 {groupName}
               </Text>
               {showHeader && (
-                <Text className="text-military-grey text-xs">
+                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
                   {chatType === 'group' ? '12 members • Online' : 'Online'}
                 </Text>
               )}
             </View>
           </TouchableOpacity>
 
-          {/* Actions */}
           <View className="flex-row">
             {chatType === 'group' && (
               <IconButton
                 name="videocam"
                 size={24}
-                color="#ffffff"
+                color={theme.colors.textPrimary}
                 onPress={() => navigation.navigate('Call', { isVideoCall: true })}
                 className="mr-3"
               />
@@ -87,15 +95,15 @@ export const ChatScreen: React.FC = () => {
             <IconButton
               name="call"
               size={24}
-              color="#ffffff"
+              color={theme.colors.textPrimary}
               onPress={() => navigation.navigate('Call', { isVideoCall: false })}
               className="mr-3"
             />
             <IconButton
               name="ellipsis-vertical"
               size={24}
-              color="#ffffff"
-              onPress={() => {/* Show menu */}}
+              color={theme.colors.textPrimary}
+              onPress={() => {}}
             />
           </View>
         </View>
@@ -111,29 +119,37 @@ export const ChatScreen: React.FC = () => {
           <TouchableOpacity
             onLongPress={handleLongPress}
             delayLongPress={500}
-            className={`mb-3 max-w-[80%] ${
-              item.isOwn ? 'self-end' : 'self-start'
-            }`}
+            className={`mb-3 max-w-[80%] ${item.isOwn ? 'self-end' : 'self-start'}`}
             activeOpacity={0.7}
           >
             {!item.isOwn && (
-              <Text className="text-military-grey text-xs mb-1 ml-3 font-medium">
+              <Text
+                className="text-xs mb-1 ml-3 font-medium"
+                style={{ color: theme.colors.textSecondary }}
+              >
                 {item.sender}
               </Text>
             )}
             <View
               className={`px-4 py-3 rounded-2xl ${
-                item.isOwn
-                  ? 'bg-military-green rounded-br-none'
-                  : 'bg-military-blue rounded-bl-none border border-military-grey/30'
+                item.isOwn ? 'rounded-br-none' : 'rounded-bl-none'
               }`}
+              style={{
+                backgroundColor: item.isOwn ? theme.colors.accent : theme.colors.cardBg,
+                borderWidth: item.isOwn ? 0 : 1,
+                borderColor: theme.colors.border,
+              }}
             >
-              <Text className="text-white leading-5">{item.content}</Text>
+              <Text
+                className="leading-5"
+                style={{ color: item.isOwn ? '#FFFFFF' : theme.colors.textPrimary }}
+              >
+                {item.content}
+              </Text>
             </View>
             <Text
-              className={`text-military-grey text-xs mt-1 ${
-                item.isOwn ? 'text-right mr-3' : 'ml-3'
-              }`}
+              className={`text-xs mt-1 ${item.isOwn ? 'text-right mr-3' : 'ml-3'}`}
+              style={{ color: theme.colors.textSecondary }}
             >
               {item.timestamp}
             </Text>
@@ -142,19 +158,27 @@ export const ChatScreen: React.FC = () => {
       />
 
       {/* Input Bar */}
-      <View className="bg-military-navy px-4 py-3 border-t border-military-grey/20">
+      <View
+        className="px-4 py-3 border-t"
+        style={{
+          backgroundColor: theme.colors.secondaryBg,
+          borderTopColor: theme.colors.border,
+        }}
+      >
         <View className="flex-row items-center">
-          {/* Attachment Button */}
           <TouchableOpacity className="mr-2">
-            <Ionicons name="add-circle" size={32} color="#556B2F" />
+            <Ionicons name="add-circle" size={32} color={theme.colors.accent} />
           </TouchableOpacity>
 
-          {/* Text Input */}
-          <View className="flex-1 bg-military-blue rounded-full px-4 py-2 flex-row items-center">
+          <View
+            className="flex-1 rounded-full px-4 py-2 flex-row items-center"
+            style={{ backgroundColor: theme.colors.cardBg }}
+          >
             <TextInput
-              className="flex-1 text-white"
+              className="flex-1"
+              style={{ color: theme.colors.textPrimary }}
               placeholder="Type a message..."
-              placeholderTextColor="#95a5a6"
+              placeholderTextColor={theme.colors.textSecondary}
               value={inputText}
               onChangeText={setInputText}
               multiline
@@ -162,13 +186,13 @@ export const ChatScreen: React.FC = () => {
               {...disableCopyPaste()}
             />
             <TouchableOpacity className="ml-2">
-              <Ionicons name="happy-outline" size={24} color="#95a5a6" />
+              <Ionicons name="happy-outline" size={24} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          {/* Send Button */}
           <TouchableOpacity
-            className="ml-2 w-10 h-10 bg-military-green rounded-full items-center justify-center"
+            className="ml-2 w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: theme.colors.accent }}
             onPress={handleSend}
             disabled={!inputText.trim()}
           >
@@ -183,7 +207,7 @@ export const ChatScreen: React.FC = () => {
 
       {/* Security Watermark */}
       <View className="absolute bottom-20 right-4 opacity-10 pointer-events-none">
-        <Ionicons name="shield-checkmark" size={40} color="#ffffff" />
+        <Ionicons name="shield-checkmark" size={40} color={theme.colors.textSecondary} />
       </View>
     </View>
   );

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Mention {
   id: string;
@@ -36,21 +38,27 @@ const MOCK_MENTIONS: Mention[] = [
 
 export const MentionsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme, isDark } = useTheme();
 
   return (
-    <View className="flex-1 bg-military-dark">
+    <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
       {/* Header */}
-      <View className="bg-military-navy px-6 pt-12 pb-6">
+      <View
+        className="px-6 pt-12 pb-6"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             className="mr-4"
           >
-            <Text className="text-white text-2xl">‹</Text>
+            <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
           <View>
-            <Text className="text-white text-2xl font-bold">Mentions</Text>
-            <Text className="text-military-lightGrey mt-1">
+            <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
+              Mentions
+            </Text>
+            <Text className="mt-1" style={{ color: theme.colors.textSecondary }}>
               Messages that mention you
             </Text>
           </View>
@@ -64,7 +72,11 @@ export const MentionsScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            className="bg-military-blue p-4 rounded-lg mb-3 border-l-4 border-military-green"
+            className="p-4 rounded-lg mb-3 border-l-4"
+            style={{
+              backgroundColor: theme.colors.cardBg,
+              borderLeftColor: theme.colors.accent,
+            }}
             onPress={() =>
               navigation.navigate('Chat', {
                 groupId: item.id,
@@ -73,20 +85,26 @@ export const MentionsScreen: React.FC = () => {
             }
           >
             <View className="flex-row justify-between mb-2">
-              <Text className="text-white font-semibold">{item.sender}</Text>
-              <Text className="text-military-grey text-xs">{item.timestamp}</Text>
+              <Text className="font-semibold" style={{ color: theme.colors.textPrimary }}>
+                {item.sender}
+              </Text>
+              <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                {item.timestamp}
+              </Text>
             </View>
-            <Text className="text-military-lightGrey text-sm mb-2">
+            <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
               {item.message}
             </Text>
-            <Text className="text-military-grey text-xs">
+            <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
               in {item.group}
             </Text>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
           <View className="items-center py-12">
-            <Text className="text-military-grey text-lg">No mentions yet</Text>
+            <Text className="text-lg" style={{ color: theme.colors.textSecondary }}>
+              No mentions yet
+            </Text>
           </View>
         }
       />

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface StarredMessage {
   id: string;
@@ -29,21 +31,27 @@ const MOCK_STARRED: StarredMessage[] = [
 
 export const StarredMessagesScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme, isDark } = useTheme();
 
   return (
-    <View className="flex-1 bg-military-dark">
+    <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
       {/* Header */}
-      <View className="bg-military-navy px-6 pt-12 pb-6">
+      <View
+        className="px-6 pt-12 pb-6"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             className="mr-4"
           >
-            <Text className="text-white text-2xl">‹</Text>
+            <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
           <View>
-            <Text className="text-white text-2xl font-bold">Starred Messages</Text>
-            <Text className="text-military-lightGrey mt-1">
+            <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
+              Starred Messages
+            </Text>
+            <Text className="mt-1" style={{ color: theme.colors.textSecondary }}>
               Important saved messages
             </Text>
           </View>
@@ -57,7 +65,12 @@ export const StarredMessagesScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            className="bg-military-blue p-4 rounded-lg mb-3"
+            className="p-4 rounded-lg mb-3"
+            style={{
+              backgroundColor: theme.colors.cardBg,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
             onPress={() =>
               navigation.navigate('Chat', {
                 groupId: item.id,
@@ -66,14 +79,20 @@ export const StarredMessagesScreen: React.FC = () => {
             }
           >
             <View className="flex-row items-start mb-2">
-              <Text className="text-yellow-500 text-xl mr-2">⭐</Text>
-              <View className="flex-1">
+              <Ionicons name="star" size={20} color={theme.colors.warning} />
+              <View className="flex-1 ml-2">
                 <View className="flex-row justify-between mb-1">
-                  <Text className="text-white font-semibold">{item.sender}</Text>
-                  <Text className="text-military-grey text-xs">{item.timestamp}</Text>
+                  <Text className="font-semibold" style={{ color: theme.colors.textPrimary }}>
+                    {item.sender}
+                  </Text>
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    {item.timestamp}
+                  </Text>
                 </View>
-                <Text className="text-military-lightGrey">{item.message}</Text>
-                <Text className="text-military-grey text-xs mt-2">
+                <Text style={{ color: theme.colors.textSecondary }}>
+                  {item.message}
+                </Text>
+                <Text className="text-xs mt-2" style={{ color: theme.colors.textSecondary }}>
                   in {item.group}
                 </Text>
               </View>
@@ -82,7 +101,7 @@ export const StarredMessagesScreen: React.FC = () => {
         )}
         ListEmptyComponent={
           <View className="items-center py-12">
-            <Text className="text-military-grey text-lg">
+            <Text className="text-lg" style={{ color: theme.colors.textSecondary }}>
               No starred messages
             </Text>
           </View>

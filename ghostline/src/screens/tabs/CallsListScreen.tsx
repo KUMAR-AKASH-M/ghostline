@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { IconButton } from '../../components/common/IconButton';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Call {
   id: string;
@@ -49,6 +50,7 @@ const MOCK_CALLS: Call[] = [
 
 export const CallsListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme, isDark } = useTheme();
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,17 +60,21 @@ export const CallsListScreen: React.FC = () => {
 
   const getCallIcon = (call: Call) => {
     if (call.type === 'missed') {
-      return <Ionicons name="call-outline" size={20} color="#ef4444" />;
+      return <Ionicons name="call-outline" size={20} color={theme.colors.error} />;
     }
     if (call.type === 'incoming') {
-      return <Ionicons name="arrow-down" size={20} color="#556B2F" />;
+      return <Ionicons name="arrow-down" size={20} color={theme.colors.accent} />;
     }
-    return <Ionicons name="arrow-up" size={20} color="#95a5a6" />;
+    return <Ionicons name="arrow-up" size={20} color={theme.colors.textSecondary} />;
   };
 
   const renderCallItem = ({ item }: { item: Call }) => (
     <TouchableOpacity
-      className="flex-row items-center px-6 py-4 border-b border-military-grey/20 active:bg-military-blue/30"
+      className="flex-row items-center px-6 py-4"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+      }}
       onPress={() =>
         navigation.navigate('Call', {
           callId: item.id,
@@ -77,21 +83,25 @@ export const CallsListScreen: React.FC = () => {
       }
     >
       {/* Avatar */}
-      <View className="w-12 h-12 rounded-full bg-military-navy items-center justify-center mr-4">
-        <Ionicons name="person" size={24} color="#556B2F" />
+      <View
+        className="w-12 h-12 rounded-full items-center justify-center mr-4"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
+        <Ionicons name="person" size={24} color={theme.colors.accent} />
       </View>
 
       {/* Call Info */}
       <View className="flex-1">
-        <Text className="text-white text-base font-semibold mb-1">
+        <Text className="text-base font-semibold mb-1" style={{ color: theme.colors.textPrimary }}>
           {item.name}
         </Text>
         <View className="flex-row items-center">
           {getCallIcon(item)}
           <Text
-            className={`text-sm ml-2 ${
-              item.type === 'missed' ? 'text-red-400' : 'text-military-lightGrey'
-            }`}
+            className="text-sm ml-2"
+            style={{
+              color: item.type === 'missed' ? theme.colors.error : theme.colors.textSecondary,
+            }}
           >
             {item.callType === 'video' ? 'Video' : 'Voice'} • {item.timestamp}
           </Text>
@@ -101,7 +111,9 @@ export const CallsListScreen: React.FC = () => {
       {/* Duration & Call Button */}
       <View className="items-end">
         {item.duration && (
-          <Text className="text-military-grey text-sm mb-2">{item.duration}</Text>
+          <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
+            {item.duration}
+          </Text>
         )}
         <TouchableOpacity
           onPress={() =>
@@ -114,7 +126,7 @@ export const CallsListScreen: React.FC = () => {
           <Ionicons
             name={item.callType === 'video' ? 'videocam' : 'call'}
             size={24}
-            color="#556B2F"
+            color={theme.colors.accent}
           />
         </TouchableOpacity>
       </View>
@@ -122,28 +134,30 @@ export const CallsListScreen: React.FC = () => {
   );
 
   return (
-    <View className="flex-1 bg-military-dark">
+    <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
       {/* Header */}
-      <View className="bg-military-navy px-4 pt-12 pb-4 shadow-lg">
+      <View
+        className="px-4 pt-12 pb-4 shadow-lg"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         <View className="flex-row items-center justify-between">
-          {/* Left: Drawer Menu */}
           <IconButton
             name="menu"
             size={28}
-            color="#ffffff"
+            color={theme.colors.textPrimary}
             onPress={() => navigation.openDrawer()}
           />
 
-          {/* Center: Title */}
           <View className="flex-1 mx-4">
-            <Text className="text-white text-xl font-bold">Calls</Text>
+            <Text className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
+              Calls
+            </Text>
           </View>
 
-          {/* Right: Search */}
           <IconButton
             name={searchVisible ? 'close' : 'search'}
             size={24}
-            color="#ffffff"
+            color={theme.colors.textPrimary}
             onPress={() => {
               setSearchVisible(!searchVisible);
               if (searchVisible) setSearchQuery('');
@@ -153,12 +167,16 @@ export const CallsListScreen: React.FC = () => {
 
         {/* Search Bar */}
         {searchVisible && (
-          <View className="mt-3 flex-row items-center bg-military-dark/50 rounded-lg px-3 py-2">
-            <Ionicons name="search" size={20} color="#95a5a6" />
+          <View
+            className="mt-3 flex-row items-center rounded-lg px-3 py-2"
+            style={{ backgroundColor: theme.colors.cardBg }}
+          >
+            <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
             <TextInput
-              className="flex-1 text-white ml-2 py-1"
+              className="flex-1 ml-2 py-1"
+              style={{ color: theme.colors.textPrimary }}
               placeholder="Search calls..."
-              placeholderTextColor="#95a5a6"
+              placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoFocus
@@ -169,19 +187,39 @@ export const CallsListScreen: React.FC = () => {
 
       {/* Call Stats */}
       <View className="flex-row px-6 py-4 gap-3">
-        <View className="flex-1 bg-military-blue/40 p-4 rounded-lg border border-military-grey/30">
+        <View
+          className="flex-1 p-4 rounded-lg border"
+          style={{
+            backgroundColor: theme.colors.cardBg,
+            borderColor: theme.colors.border,
+          }}
+        >
           <View className="flex-row items-center mb-2">
-            <Ionicons name="call" size={20} color="#556B2F" />
-            <Text className="text-military-green text-2xl font-bold ml-2">24</Text>
+            <Ionicons name="call" size={20} color={theme.colors.accent} />
+            <Text className="text-2xl font-bold ml-2" style={{ color: theme.colors.accent }}>
+              24
+            </Text>
           </View>
-          <Text className="text-military-grey text-sm">Total Calls</Text>
+          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+            Total Calls
+          </Text>
         </View>
-        <View className="flex-1 bg-military-blue/40 p-4 rounded-lg border border-military-grey/30">
+        <View
+          className="flex-1 p-4 rounded-lg border"
+          style={{
+            backgroundColor: theme.colors.cardBg,
+            borderColor: theme.colors.border,
+          }}
+        >
           <View className="flex-row items-center mb-2">
-            <Ionicons name="time-outline" size={20} color="#556B2F" />
-            <Text className="text-military-green text-2xl font-bold ml-2">3h 42m</Text>
+            <Ionicons name="time-outline" size={20} color={theme.colors.accent} />
+            <Text className="text-2xl font-bold ml-2" style={{ color: theme.colors.accent }}>
+              3h 42m
+            </Text>
           </View>
-          <Text className="text-military-grey text-sm">This Week</Text>
+          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+            This Week
+          </Text>
         </View>
       </View>
 
@@ -192,8 +230,8 @@ export const CallsListScreen: React.FC = () => {
         renderItem={renderCallItem}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-20">
-            <Ionicons name="call-outline" size={64} color="#95a5a6" />
-            <Text className="text-military-grey text-lg mt-4">
+            <Ionicons name="call-outline" size={64} color={theme.colors.textSecondary} />
+            <Text className="text-lg mt-4" style={{ color: theme.colors.textSecondary }}>
               No calls found
             </Text>
           </View>
@@ -202,8 +240,9 @@ export const CallsListScreen: React.FC = () => {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        className="absolute bottom-6 right-6 w-16 h-16 bg-military-green rounded-full items-center justify-center shadow-lg"
+        className="absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
         style={{
+          backgroundColor: theme.colors.accent,
           elevation: 8,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },

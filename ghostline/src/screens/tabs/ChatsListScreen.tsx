@@ -5,11 +5,13 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { MOCK_GROUPS, MOCK_DIRECT_CHATS } from '../../services/mock/MockData';
 import { MemberApprovalModal } from '../../components/modals/MemberApprovalModal';
 import { IconButton } from '../../components/common/IconButton';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type FilterType = 'all' | 'direct' | 'group';
 
 export const ChatsListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme, isDark } = useTheme();
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchVisible, setSearchVisible] = useState(false);
@@ -18,10 +20,7 @@ export const ChatsListScreen: React.FC = () => {
   const allChats = [
     ...MOCK_DIRECT_CHATS.map(chat => ({ ...chat, type: 'direct' as const })),
     ...MOCK_GROUPS.map(group => ({ ...group, type: 'group' as const })),
-  ].sort((a, b) => {
-    // Sort by timestamp (mock implementation)
-    return 0;
-  });
+  ].sort((a, b) => 0);
 
   const filteredChats = allChats.filter(chat => {
     const matchesFilter = activeFilter === 'all' || chat.type === activeFilter;
@@ -32,16 +31,18 @@ export const ChatsListScreen: React.FC = () => {
   const FilterButton: React.FC<{ filter: FilterType; label: string }> = ({ filter, label }) => (
     <TouchableOpacity
       onPress={() => setActiveFilter(filter)}
-      className={`px-4 py-2 rounded-full mr-2 ${
-        activeFilter === filter
-          ? 'bg-military-green'
-          : 'bg-military-blue border border-military-grey'
-      }`}
+      className={`px-4 py-2 rounded-full mr-2`}
+      style={{
+        backgroundColor: activeFilter === filter ? theme.colors.accent : theme.colors.cardBg,
+        borderWidth: activeFilter === filter ? 0 : 1,
+        borderColor: theme.colors.border,
+      }}
     >
       <Text
-        className={`font-semibold ${
-          activeFilter === filter ? 'text-white' : 'text-military-lightGrey'
-        }`}
+        className="font-semibold"
+        style={{
+          color: activeFilter === filter ? '#FFFFFF' : theme.colors.textSecondary,
+        }}
       >
         {label}
       </Text>
@@ -50,7 +51,11 @@ export const ChatsListScreen: React.FC = () => {
 
   const renderChatItem = ({ item }: any) => (
     <TouchableOpacity
-      className="flex-row items-center px-6 py-4 border-b border-military-grey/20 active:bg-military-blue/30"
+      className="flex-row items-center px-6 py-4"
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+      }}
       onPress={() =>
         navigation.navigate('Chat', {
           groupId: item.id,
@@ -60,31 +65,45 @@ export const ChatsListScreen: React.FC = () => {
       }
     >
       {/* Avatar */}
-      <View className="w-14 h-14 rounded-full bg-military-navy items-center justify-center mr-4">
+      <View
+        className="w-14 h-14 rounded-full items-center justify-center mr-4"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         {item.type === 'group' ? (
-          <MaterialIcons name="groups" size={28} color="#556B2F" />
+          <MaterialIcons name="groups" size={28} color={theme.colors.accent} />
         ) : (
-          <Ionicons name="person" size={24} color="#556B2F" />
+          <Ionicons name="person" size={24} color={theme.colors.accent} />
         )}
       </View>
 
       {/* Chat Info */}
       <View className="flex-1">
         <View className="flex-row justify-between items-center mb-1">
-          <Text className="text-white text-base font-semibold flex-1" numberOfLines={1}>
+          <Text
+            className="text-base font-semibold flex-1"
+            style={{ color: theme.colors.textPrimary }}
+            numberOfLines={1}
+          >
             {item.name}
           </Text>
-          <Text className="text-military-grey text-xs ml-2">
+          <Text className="text-xs ml-2" style={{ color: theme.colors.textSecondary }}>
             {item.timestamp}
           </Text>
         </View>
         
         <View className="flex-row justify-between items-center">
-          <Text className="text-military-lightGrey text-sm flex-1" numberOfLines={1}>
+          <Text
+            className="text-sm flex-1"
+            style={{ color: theme.colors.textSecondary }}
+            numberOfLines={1}
+          >
             {item.lastMessage}
           </Text>
           {item.unread > 0 && (
-            <View className="bg-military-green rounded-full min-w-[20px] h-5 items-center justify-center px-1.5 ml-2">
+            <View
+              className="rounded-full min-w-[20px] h-5 items-center justify-center px-1.5 ml-2"
+              style={{ backgroundColor: theme.colors.accent }}
+            >
               <Text className="text-white text-xs font-bold">
                 {item.unread}
               </Text>
@@ -96,28 +115,30 @@ export const ChatsListScreen: React.FC = () => {
   );
 
   return (
-    <View className="flex-1 bg-military-dark">
+    <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
       {/* Header */}
-      <View className="bg-military-navy px-4 pt-12 pb-4 shadow-lg">
+      <View
+        className="px-4 pt-12 pb-4 shadow-lg"
+        style={{ backgroundColor: theme.colors.secondaryBg }}
+      >
         <View className="flex-row items-center justify-between">
-          {/* Left: Drawer Menu */}
           <IconButton
             name="menu"
             size={28}
-            color="#ffffff"
+            color={theme.colors.textPrimary}
             onPress={() => navigation.openDrawer()}
           />
 
-          {/* Center: Title */}
           <View className="flex-1 mx-4">
-            <Text className="text-white text-xl font-bold">Messages</Text>
+            <Text className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
+              Messages
+            </Text>
           </View>
 
-          {/* Right: Search */}
           <IconButton
             name={searchVisible ? 'close' : 'search'}
             size={24}
-            color="#ffffff"
+            color={theme.colors.textPrimary}
             onPress={() => {
               setSearchVisible(!searchVisible);
               if (searchVisible) setSearchQuery('');
@@ -127,19 +148,23 @@ export const ChatsListScreen: React.FC = () => {
 
         {/* Search Bar */}
         {searchVisible && (
-          <View className="mt-3 flex-row items-center bg-military-dark/50 rounded-lg px-3 py-2">
-            <Ionicons name="search" size={20} color="#95a5a6" />
+          <View
+            className="mt-3 flex-row items-center rounded-lg px-3 py-2"
+            style={{ backgroundColor: theme.colors.cardBg }}
+          >
+            <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
             <TextInput
-              className="flex-1 text-white ml-2 py-1"
+              className="flex-1 ml-2 py-1"
+              style={{ color: theme.colors.textPrimary }}
               placeholder="Search messages..."
-              placeholderTextColor="#95a5a6"
+              placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoFocus
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#95a5a6" />
+                <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -147,7 +172,14 @@ export const ChatsListScreen: React.FC = () => {
       </View>
 
       {/* Filters */}
-      <View className="bg-military-dark px-6 py-3 border-b border-military-grey/20">
+      <View
+        className="px-6 py-3"
+        style={{
+          backgroundColor: theme.colors.primaryBg,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border,
+        }}
+      >
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -166,21 +198,25 @@ export const ChatsListScreen: React.FC = () => {
       {/* Pending Approvals Banner */}
       {activeFilter !== 'direct' && (
         <TouchableOpacity
-          className="bg-military-green/20 border-l-4 border-military-green mx-4 mt-4 p-4 rounded-lg flex-row justify-between items-center"
+          className="mx-4 mt-4 p-4 rounded-lg flex-row justify-between items-center border-l-4"
+          style={{
+            backgroundColor: isDark ? theme.colors.cardBg : theme.colors.secondaryBg,
+            borderLeftColor: theme.colors.accent,
+          }}
           onPress={() => setShowApprovalModal(true)}
         >
           <View className="flex-row items-center flex-1">
-            <Ionicons name="person-add" size={24} color="#556B2F" />
+            <Ionicons name="person-add" size={24} color={theme.colors.accent} />
             <View className="ml-3 flex-1">
-              <Text className="text-military-green font-semibold">
+              <Text className="font-semibold" style={{ color: theme.colors.accent }}>
                 2 Pending Requests
               </Text>
-              <Text className="text-military-lightGrey text-sm">
+              <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
                 Review member approvals
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#556B2F" />
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.accent} />
         </TouchableOpacity>
       )}
 
@@ -191,8 +227,8 @@ export const ChatsListScreen: React.FC = () => {
         renderItem={renderChatItem}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-20">
-            <Ionicons name="chatbubbles-outline" size={64} color="#95a5a6" />
-            <Text className="text-military-grey text-lg mt-4">
+            <Ionicons name="chatbubbles-outline" size={64} color={theme.colors.textSecondary} />
+            <Text className="text-lg mt-4" style={{ color: theme.colors.textSecondary }}>
               No messages found
             </Text>
           </View>
@@ -201,15 +237,16 @@ export const ChatsListScreen: React.FC = () => {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        className="absolute bottom-6 right-6 w-16 h-16 bg-military-green rounded-full items-center justify-center shadow-lg"
+        className="absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
         style={{
+          backgroundColor: theme.colors.accent,
           elevation: 8,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 4,
         }}
-        onPress={() => {/* Navigate to new chat screen */}}
+        onPress={() => {}}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
       </TouchableOpacity>

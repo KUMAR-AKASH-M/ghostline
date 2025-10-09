@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthService, RegistrationData } from '../services/auth/AuthService';
 import { CryptoService } from '../services/auth/CryptoService';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme, isDark } = useTheme();
   const [step, setStep] = useState(1);
   const [armyId, setArmyId] = useState('');
   const [phone, setPhone] = useState('');
@@ -83,100 +86,169 @@ export const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-military-dark">
-      <ScrollView className="flex-1 px-6 pt-12">
+    <KeyboardAvoidingView
+      className="flex-1"
+      style={{ backgroundColor: theme.colors.primaryBg }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        className="flex-1 px-6"
+        contentContainerClassName="py-12"
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Step 1: User Details */}
         {step === 1 && (
           <>
             <TouchableOpacity 
               onPress={() => navigation.goBack()}
-              className="mb-6"
+              className="mb-6 flex-row items-center"
             >
-              <Text className="text-military-green text-lg">← Back to Login</Text>
+              <Ionicons name="arrow-back" size={24} color={theme.colors.accent} />
+              <Text className="ml-2 text-base font-medium" style={{ color: theme.colors.accent }}>
+                Back to Login
+              </Text>
             </TouchableOpacity>
 
-            <Text className="text-white text-3xl font-bold mb-2">Register</Text>
-            <Text className="text-military-lightGrey text-lg mb-8">
-              Create your secure account
+            <Text className="text-3xl font-bold mb-2" style={{ color: theme.colors.textPrimary }}>
+              Create Account
+            </Text>
+            <Text className="text-lg mb-8" style={{ color: theme.colors.textSecondary }}>
+              Register for secure communication
             </Text>
 
             <View className="space-y-4">
               <View>
-                <Text className="text-military-lightGrey mb-2 font-medium">
+                <Text className="mb-2 font-medium" style={{ color: theme.colors.textSecondary }}>
                   Army ID *
                 </Text>
-                <TextInput
-                  className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey"
-                  placeholder="Enter Army ID"
-                  placeholderTextColor="#95a5a6"
-                  value={armyId}
-                  onChangeText={setArmyId}
-                  autoCapitalize="characters"
-                />
+                <View
+                  className="flex-row items-center px-4 py-3 rounded-xl border"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Ionicons name="id-card-outline" size={20} color={theme.colors.textSecondary} />
+                  <TextInput
+                    className="flex-1 ml-3"
+                    style={{ color: theme.colors.textPrimary }}
+                    placeholder="Enter Army ID"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    value={armyId}
+                    onChangeText={setArmyId}
+                    autoCapitalize="characters"
+                  />
+                </View>
               </View>
 
               <View>
-                <Text className="text-military-lightGrey mb-2 font-medium">
+                <Text className="mb-2 font-medium" style={{ color: theme.colors.textSecondary }}>
                   Phone Number *
                 </Text>
-                <TextInput
-                  className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey"
-                  placeholder="+91 XXXXXXXXXX"
-                  placeholderTextColor="#95a5a6"
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                />
+                <View
+                  className="flex-row items-center px-4 py-3 rounded-xl border"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Ionicons name="call-outline" size={20} color={theme.colors.textSecondary} />
+                  <TextInput
+                    className="flex-1 ml-3"
+                    style={{ color: theme.colors.textPrimary }}
+                    placeholder="+91 XXXXXXXXXX"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                  />
+                </View>
               </View>
 
               <View>
-                <Text className="text-military-lightGrey mb-2 font-medium">
+                <Text className="mb-2 font-medium" style={{ color: theme.colors.textSecondary }}>
                   Full Name *
                 </Text>
-                <TextInput
-                  className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey"
-                  placeholder="Enter your name"
-                  placeholderTextColor="#95a5a6"
-                  value={name}
-                  onChangeText={setName}
-                />
+                <View
+                  className="flex-row items-center px-4 py-3 rounded-xl border"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Ionicons name="person-outline" size={20} color={theme.colors.textSecondary} />
+                  <TextInput
+                    className="flex-1 ml-3"
+                    style={{ color: theme.colors.textPrimary }}
+                    placeholder="Enter your name"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
               </View>
 
               <View>
-                <Text className="text-military-lightGrey mb-2 font-medium">
+                <Text className="mb-2 font-medium" style={{ color: theme.colors.textSecondary }}>
                   Rank *
                 </Text>
-                <TextInput
-                  className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey"
-                  placeholder="e.g., Captain"
-                  placeholderTextColor="#95a5a6"
-                  value={rank}
-                  onChangeText={setRank}
-                />
+                <View
+                  className="flex-row items-center px-4 py-3 rounded-xl border"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Ionicons name="medal-outline" size={20} color={theme.colors.textSecondary} />
+                  <TextInput
+                    className="flex-1 ml-3"
+                    style={{ color: theme.colors.textPrimary }}
+                    placeholder="e.g., Captain"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    value={rank}
+                    onChangeText={setRank}
+                  />
+                </View>
               </View>
 
               <View>
-                <Text className="text-military-lightGrey mb-2 font-medium">
+                <Text className="mb-2 font-medium" style={{ color: theme.colors.textSecondary }}>
                   Unit *
                 </Text>
-                <TextInput
-                  className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey"
-                  placeholder="e.g., 5th Infantry Division"
-                  placeholderTextColor="#95a5a6"
-                  value={unit}
-                  onChangeText={setUnit}
-                />
+                <View
+                  className="flex-row items-center px-4 py-3 rounded-xl border"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Ionicons name="business-outline" size={20} color={theme.colors.textSecondary} />
+                  <TextInput
+                    className="flex-1 ml-3"
+                    style={{ color: theme.colors.textPrimary }}
+                    placeholder="e.g., 5th Infantry Division"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    value={unit}
+                    onChangeText={setUnit}
+                  />
+                </View>
               </View>
 
               <TouchableOpacity
-                className={`py-4 rounded-lg mt-6 ${
-                  isLoading ? 'bg-military-grey' : 'bg-military-green'
-                }`}
+                className="py-4 rounded-xl mt-6"
+                style={{
+                  backgroundColor: isLoading ? theme.colors.border : theme.colors.accent,
+                  shadowColor: theme.colors.accent,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 5,
+                }}
                 onPress={handleSendOtp}
                 disabled={isLoading}
               >
                 <Text className="text-white text-center font-semibold text-lg">
-                  {isLoading ? 'Checking...' : 'Send OTP'}
+                  {isLoading ? 'Processing...' : 'Send OTP'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -186,33 +258,54 @@ export const RegisterScreen: React.FC = () => {
         {/* Step 2: OTP Verification */}
         {step === 2 && (
           <>
-            <Text className="text-white text-3xl font-bold mb-2">
+            <Text className="text-3xl font-bold mb-2" style={{ color: theme.colors.textPrimary }}>
               Verify OTP
             </Text>
-            <Text className="text-military-lightGrey text-lg mb-8">
+            <Text className="text-lg mb-8" style={{ color: theme.colors.textSecondary }}>
               Enter the 6-digit code sent to {phone}
             </Text>
 
-            <TextInput
-              className="bg-military-blue text-white px-4 py-3 rounded-lg border border-military-grey text-center text-2xl tracking-widest"
-              placeholder="000000"
-              placeholderTextColor="#95a5a6"
-              value={otp}
-              onChangeText={setOtp}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
+            <View
+              className="px-4 py-3 rounded-xl text-center border"
+              style={{
+                backgroundColor: theme.colors.cardBg,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <TextInput
+                className="text-2xl tracking-widest text-center"
+                style={{ color: theme.colors.textPrimary }}
+                placeholder="000000"
+                placeholderTextColor={theme.colors.textSecondary}
+                value={otp}
+                onChangeText={setOtp}
+                keyboardType="number-pad"
+                maxLength={6}
+              />
+            </View>
 
-            <View className="bg-military-blue rounded-lg p-4 mt-4">
-              <Text className="text-military-grey text-sm">
+            <View
+              className="rounded-xl p-4 mt-4"
+              style={{
+                backgroundColor: theme.colors.cardBg,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
                 📱 Mock OTP: {generatedOtp}
               </Text>
             </View>
 
             <TouchableOpacity
-              className={`py-4 rounded-lg mt-6 ${
-                otp.length === 6 ? 'bg-military-green' : 'bg-military-grey opacity-50'
-              }`}
+              className="py-4 rounded-xl mt-6"
+              style={{
+                backgroundColor: otp.length === 6 ? theme.colors.accent : theme.colors.border,
+                shadowColor: theme.colors.accent,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5,
+              }}
               onPress={handleGenerateSeedPhrase}
               disabled={otp.length !== 6}
             >
@@ -226,42 +319,60 @@ export const RegisterScreen: React.FC = () => {
         {/* Step 3: Seed Phrase */}
         {step === 3 && (
           <>
-            <Text className="text-white text-3xl font-bold mb-2">
+            <Text className="text-3xl font-bold mb-2" style={{ color: theme.colors.textPrimary }}>
               Save Your Seed Phrase
             </Text>
-            <Text className="text-military-lightGrey text-lg mb-4">
+            <Text className="text-lg mb-4" style={{ color: theme.colors.textSecondary }}>
               Write down these 15 words in order
             </Text>
             
-            <View className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
-              <Text className="text-red-400 text-sm font-semibold mb-2">
+            <View
+              className="rounded-xl p-4 mb-6 border-2"
+              style={{
+                backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2',
+                borderColor: theme.colors.error,
+              }}
+            >
+              <Text className="text-sm font-semibold mb-2" style={{ color: theme.colors.error }}>
                 ⚠️ CRITICAL: Save This Securely
               </Text>
-              <Text className="text-red-300 text-xs">
+              <Text className="text-xs" style={{ color: theme.colors.error }}>
                 This seed phrase is the ONLY way to recover your account. Store it offline and never share it.
               </Text>
             </View>
 
-            <View className="bg-military-blue rounded-lg p-4 mb-6">
-              <Text className="text-white text-base leading-7">
+            <View
+              className="rounded-xl p-4 mb-6"
+              style={{
+                backgroundColor: theme.colors.cardBg,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <Text className="text-base leading-7" style={{ color: theme.colors.textPrimary }}>
                 {seedPhrase}
               </Text>
             </View>
 
             <TouchableOpacity
-              className={`py-4 rounded-lg ${
-                isLoading ? 'bg-military-grey' : 'bg-military-green'
-              }`}
+              className="py-4 rounded-xl"
+              style={{
+                backgroundColor: isLoading ? theme.colors.border : theme.colors.accent,
+                shadowColor: theme.colors.accent,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5,
+              }}
               onPress={handleVerifyAndComplete}
               disabled={isLoading}
             >
               <Text className="text-white text-center font-semibold text-lg">
-                {isLoading ? 'Completing Registration...' : 'I Have Saved It Securely'}
+                {isLoading ? 'Completing...' : 'I Have Saved It Securely'}
               </Text>
             </TouchableOpacity>
           </>
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
