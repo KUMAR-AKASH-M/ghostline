@@ -9,6 +9,10 @@ import { DrawerNavigator } from './DrawerNavigator';
 import { ChatScreen } from '../screens/ChatScreen';
 import { VoiceVideoCallScreen } from '../screens/VoiceVideoCallScreen';
 import { FileViewerScreen } from '../screens/FileViewerScreen';
+import { ContactsScreen } from '../screens/ContactsScreen';
+import { SelectContactScreen } from '../screens/SelectContactScreen';
+import { AddContactScreen } from '../screens/AddContactScreen';
+import { CreateGroupScreen } from '../screens/CreateGroupScreen';
 import { SecureStorage } from '../services/security/SecureStorage';
 
 const Stack = createNativeStackNavigator();
@@ -69,6 +73,10 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen name="Chat" component={ChatScreen} />
             <Stack.Screen name="Call" component={VoiceVideoCallScreen} />
             <Stack.Screen name="FileViewer" component={FileViewerScreen} />
+            <Stack.Screen name="Contacts" component={ContactsScreen} />
+            <Stack.Screen name="SelectContact" component={SelectContactScreen} />
+            <Stack.Screen name="AddContact" component={AddContactScreen} />
+            <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
           </>
         )}
       </Stack.Navigator>

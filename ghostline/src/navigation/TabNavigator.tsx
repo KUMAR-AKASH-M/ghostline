@@ -1,9 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChatsListScreen } from '../screens/tabs/ChatsListScreen';
 import { CallsListScreen } from '../screens/tabs/CallsListScreen';
+import { NotificationsScreen } from '../screens/tabs/NotificationsScreen';
 import { useTheme } from '../contexts/ThemeContext';
 
 const Tab = createBottomTabNavigator();
@@ -83,14 +84,13 @@ export const TabNavigator: React.FC = () => {
         name="Chats"
         component={ChatsListScreen}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <View className="relative">
               <Ionicons
                 name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
                 size={24}
                 color={color}
               />
-              {/* Badge */}
               <View
                 className="absolute -top-1 -right-2 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1"
                 style={{
@@ -104,10 +104,33 @@ export const TabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View className="relative">
+              <Ionicons
+                name={focused ? 'notifications' : 'notifications-outline'}
+                size={24}
+                color={color}
+              />
+              <View
+                className="absolute -top-1 -right-2 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1"
+                style={{
+                  backgroundColor: theme.colors.accent,
+                }}
+              >
+                <Text className="text-white text-[10px] font-bold">2</Text>
+              </View>
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Calls"
         component={CallsListScreen}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'call' : 'call-outline'}
               size={24}

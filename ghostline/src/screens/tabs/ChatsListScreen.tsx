@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, FlatList, TextInput } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { MOCK_GROUPS, MOCK_DIRECT_CHATS } from '../../services/mock/MockData';
-import { MemberApprovalModal } from '../../components/modals/MemberApprovalModal';
 import { IconButton } from '../../components/common/IconButton';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -12,7 +11,6 @@ type FilterType = 'all' | 'direct' | 'group';
 export const ChatsListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
-  const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +29,7 @@ export const ChatsListScreen: React.FC = () => {
   const FilterButton: React.FC<{ filter: FilterType; label: string }> = ({ filter, label }) => (
     <TouchableOpacity
       onPress={() => setActiveFilter(filter)}
-      className={`px-4 py-2 rounded-full mr-2`}
+      className="px-4 py-2 rounded-full mr-2"
       style={{
         backgroundColor: activeFilter === filter ? theme.colors.accent : theme.colors.cardBg,
         borderWidth: activeFilter === filter ? 0 : 1,
@@ -64,7 +62,6 @@ export const ChatsListScreen: React.FC = () => {
         })
       }
     >
-      {/* Avatar */}
       <View
         className="w-14 h-14 rounded-full items-center justify-center mr-4"
         style={{ backgroundColor: theme.colors.secondaryBg }}
@@ -76,7 +73,6 @@ export const ChatsListScreen: React.FC = () => {
         )}
       </View>
 
-      {/* Chat Info */}
       <View className="flex-1">
         <View className="flex-row justify-between items-center mb-1">
           <Text
@@ -146,7 +142,6 @@ export const ChatsListScreen: React.FC = () => {
           />
         </View>
 
-        {/* Search Bar */}
         {searchVisible && (
           <View
             className="mt-3 flex-row items-center rounded-lg px-3 py-2"
@@ -195,31 +190,6 @@ export const ChatsListScreen: React.FC = () => {
         />
       </View>
 
-      {/* Pending Approvals Banner */}
-      {activeFilter !== 'direct' && (
-        <TouchableOpacity
-          className="mx-4 mt-4 p-4 rounded-lg flex-row justify-between items-center border-l-4"
-          style={{
-            backgroundColor: isDark ? theme.colors.cardBg : theme.colors.secondaryBg,
-            borderLeftColor: theme.colors.accent,
-          }}
-          onPress={() => setShowApprovalModal(true)}
-        >
-          <View className="flex-row items-center flex-1">
-            <Ionicons name="person-add" size={24} color={theme.colors.accent} />
-            <View className="ml-3 flex-1">
-              <Text className="font-semibold" style={{ color: theme.colors.accent }}>
-                2 Pending Requests
-              </Text>
-              <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-                Review member approvals
-              </Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.colors.accent} />
-        </TouchableOpacity>
-      )}
-
       {/* Chats List */}
       <FlatList
         data={filteredChats}
@@ -241,20 +211,14 @@ export const ChatsListScreen: React.FC = () => {
         style={{
           backgroundColor: theme.colors.accent,
           elevation: 8,
-          shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
         }}
-        onPress={() => {}}
+        onPress={() => navigation.navigate('Contacts')}
       >
-        <Ionicons name="add" size={32} color="#ffffff" />
+        <Ionicons name="person-add" size={28} color="#ffffff" />
       </TouchableOpacity>
-
-      <MemberApprovalModal
-        visible={showApprovalModal}
-        onClose={() => setShowApprovalModal(false)}
-      />
     </View>
   );
 };

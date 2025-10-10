@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import {
   DrawerContentScrollView,
@@ -18,7 +19,6 @@ interface DrawerItem {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: string;
-  badge?: number;
 }
 
 export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
@@ -26,7 +26,6 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
   
   const drawerItems: DrawerItem[] = [
     { label: 'Profile', icon: 'person-outline', route: 'Profile' },
-    { label: 'Mentions', icon: 'at', route: 'Mentions', badge: 3 },
     { label: 'Starred Messages', icon: 'star-outline', route: 'StarredMessages' },
     { label: 'Theme', icon: 'color-palette-outline', route: 'Theme' },
     { label: 'Security', icon: 'shield-checkmark-outline', route: 'Security' },
@@ -37,15 +36,20 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
   const handleLogout = async () => {
     Alert.alert(
       'Logout',
-      'Are you sure you want to logout?',
+      'Are you sure you want to logout? All local data will be cleared.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            await SecureStorage.clearAll();
-            Alert.alert('Logged Out', 'You have been securely logged out');
+            try {
+              await SecureStorage.clearAll();
+              // Navigation will automatically redirect to login screen
+              // due to authentication state change
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           },
         },
       ]
@@ -57,18 +61,28 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
       <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
         {/* Header */}
         <View className="px-6 pt-16 pb-6" style={{ backgroundColor: theme.colors.secondaryBg }}>
+          {/* Profile Picture */}
           <View
             className="w-20 h-20 rounded-full items-center justify-center mb-4"
-            style={{ backgroundColor: theme.colors.accent }}
+            style={{
+              backgroundColor: theme.colors.accent,
+              shadowColor: theme.colors.accent,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
           >
-            <Text className="text-white text-3xl font-bold">O</Text>
+            <Ionicons name="shield-checkmark" size={40} color="#FFFFFF" />
           </View>
+          
           <Text className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
-            Officer 001
+            Capt. Miller
           </Text>
           <Text className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
-            Active Defense Personnel
+            DEF2025001 • Captain
           </Text>
+          
           <View className="flex-row mt-3">
             <View
               className="px-3 py-1 rounded-full flex-row items-center"
@@ -97,17 +111,7 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
               <Text className="flex-1 text-base font-medium ml-4" style={{ color: theme.colors.textPrimary }}>
                 {item.label}
               </Text>
-              {item.badge && (
-                <View
-                  className="rounded-full min-w-[24px] h-6 items-center justify-center px-2"
-                  style={{ backgroundColor: theme.colors.accent }}
-                >
-                  <Text className="text-white text-xs font-bold">
-                    {item.badge}
-                  </Text>
-                </View>
-              )}
-              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} className="ml-2" />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           ))}
         </View>

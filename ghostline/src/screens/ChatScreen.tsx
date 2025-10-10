@@ -17,7 +17,7 @@ export const ChatScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [showHeader, setShowHeader] = useState(true);
 
-  useScreenshotProtection(true);
+  // useScreenshotProtection(true);
 
   const handleSend = () => {
     if (inputText.trim()) {

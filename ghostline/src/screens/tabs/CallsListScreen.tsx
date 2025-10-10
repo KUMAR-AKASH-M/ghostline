@@ -82,7 +82,6 @@ export const CallsListScreen: React.FC = () => {
         })
       }
     >
-      {/* Avatar */}
       <View
         className="w-12 h-12 rounded-full items-center justify-center mr-4"
         style={{ backgroundColor: theme.colors.secondaryBg }}
@@ -90,7 +89,6 @@ export const CallsListScreen: React.FC = () => {
         <Ionicons name="person" size={24} color={theme.colors.accent} />
       </View>
 
-      {/* Call Info */}
       <View className="flex-1">
         <Text className="text-base font-semibold mb-1" style={{ color: theme.colors.textPrimary }}>
           {item.name}
@@ -108,7 +106,6 @@ export const CallsListScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Duration & Call Button */}
       <View className="items-end">
         {item.duration && (
           <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
@@ -165,7 +162,6 @@ export const CallsListScreen: React.FC = () => {
           />
         </View>
 
-        {/* Search Bar */}
         {searchVisible && (
           <View
             className="mt-3 flex-row items-center rounded-lg px-3 py-2"
@@ -183,44 +179,6 @@ export const CallsListScreen: React.FC = () => {
             />
           </View>
         )}
-      </View>
-
-      {/* Call Stats */}
-      <View className="flex-row px-6 py-4 gap-3">
-        <View
-          className="flex-1 p-4 rounded-lg border"
-          style={{
-            backgroundColor: theme.colors.cardBg,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="call" size={20} color={theme.colors.accent} />
-            <Text className="text-2xl font-bold ml-2" style={{ color: theme.colors.accent }}>
-              24
-            </Text>
-          </View>
-          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-            Total Calls
-          </Text>
-        </View>
-        <View
-          className="flex-1 p-4 rounded-lg border"
-          style={{
-            backgroundColor: theme.colors.cardBg,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="time-outline" size={20} color={theme.colors.accent} />
-            <Text className="text-2xl font-bold ml-2" style={{ color: theme.colors.accent }}>
-              3h 42m
-            </Text>
-          </View>
-          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-            This Week
-          </Text>
-        </View>
       </View>
 
       {/* Calls List */}
@@ -244,12 +202,11 @@ export const CallsListScreen: React.FC = () => {
         style={{
           backgroundColor: theme.colors.accent,
           elevation: 8,
-          shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
         }}
-        onPress={() => navigation.navigate('Call', { isVideoCall: false })}
+        onPress={() => navigation.navigate('SelectContact')}
       >
         <Ionicons name="call" size={28} color="#ffffff" />
       </TouchableOpacity>
