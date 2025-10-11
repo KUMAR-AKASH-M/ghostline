@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SecureStorage } from '../../services/security/SecureStorage';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English' },
@@ -30,29 +31,71 @@ export const SettingsScreen: React.FC = () => {
     Alert.alert('Language Changed', 'App language will update on next restart');
   };
 
-  const handleEmergencyWipe = () => {
+  const handleDataTamperAlert = () => {
     Alert.alert(
-      'Emergency Data Wipe',
-      'This will:\n• Delete all app data instantly\n• Trigger "data tamper" alert to HQ\n• Log you out permanently\n\nThis action cannot be undone!',
+      'Trigger Data Tamper Alert',
+      'This will send an immediate alert to HQ indicating potential security breach or data tampering.\n\nYour current session details will be logged.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Wipe Data',
+          text: 'Send Alert',
           style: 'destructive',
           onPress: async () => {
             // In production, this would:
-            // 1. Send alert to HQ
-            // 2. Delete all local data
-            // 3. Revoke all sessions
-            // 4. Clear secure storage
+            // 1. Send alert to HQ with device info, location, timestamp
+            // 2. Log the incident
+            // 3. Notify security personnel
             Alert.alert(
-              'Data Wiped',
-              'All data has been deleted and HQ has been notified.',
+              'Alert Sent',
+              'Data tamper alert has been sent to HQ. Security team has been notified.',
+              [{ text: 'OK' }]
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEmergencyWipe = () => {
+    Alert.alert(
+      'Emergency Data Wipe',
+      'This will PERMANENTLY delete all app data from this device instantly.\n\n⚠️ WARNING:\n• All messages will be deleted\n• All media will be removed\n• You will be logged out\n• This action CANNOT be undone\n\nOnly use in emergency situations.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Wipe All Data',
+          style: 'destructive',
+          onPress: async () => {
+            // Confirmation step
+            Alert.alert(
+              'Final Confirmation',
+              'Are you absolutely sure? This will delete EVERYTHING.',
               [
+                { text: 'Cancel', style: 'cancel' },
                 {
-                  text: 'OK',
-                  onPress: () => {
-                    // Navigate to login
+                  text: 'Yes, Delete Everything',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      // Clear all storage
+                      await SecureStorage.clearAll();
+                      await AsyncStorage.clear();
+                      
+                      Alert.alert(
+                        'Data Wiped',
+                        'All data has been permanently deleted from this device.',
+                        [
+                          {
+                            text: 'OK',
+                            onPress: () => {
+                              // App will redirect to login
+                            },
+                          },
+                        ]
+                      );
+                    } catch (error) {
+                      Alert.alert('Error', 'Failed to wipe data. Please try again.');
+                    }
                   },
                 },
               ]
@@ -239,26 +282,32 @@ export const SettingsScreen: React.FC = () => {
           </Text>
         </TouchableOpacity>
 
+        {/* Emergency Section */}
+        <Text className="text-sm font-bold mb-3 mt-4" style={{ color: theme.colors.textSecondary }}>
+          EMERGENCY & SECURITY
+        </Text>
+
+        {/* Data Tamper Alert */}
         <TouchableOpacity
-          className="rounded-lg p-4 mb-4 border"
+          className="rounded-lg p-4 mb-3 border"
           style={{
             backgroundColor: theme.colors.cardBg,
-            borderColor: theme.colors.border,
+            borderColor: theme.colors.warning,
           }}
+          onPress={handleDataTamperAlert}
         >
-          <Text className="text-base" style={{ color: theme.colors.textPrimary }}>
-            Media Auto-Download
-          </Text>
-          <Text className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
-            Disabled for security
+          <View className="flex-row items-center mb-2">
+            <Ionicons name="alert-circle" size={24} color={theme.colors.warning} />
+            <Text className="text-base font-bold ml-2" style={{ color: theme.colors.warning }}>
+              Trigger Data Tamper Alert
+            </Text>
+          </View>
+          <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
+            Send immediate security alert to HQ
           </Text>
         </TouchableOpacity>
 
-        {/* Emergency Section */}
-        <Text className="text-sm font-bold mb-3 mt-4" style={{ color: theme.colors.textSecondary }}>
-          EMERGENCY
-        </Text>
-
+        {/* Emergency Data Wipe */}
         <TouchableOpacity
           className="rounded-lg p-4 mb-6 border-2"
           style={{
@@ -268,13 +317,13 @@ export const SettingsScreen: React.FC = () => {
           onPress={handleEmergencyWipe}
         >
           <View className="flex-row items-center mb-2">
-            <Ionicons name="warning" size={24} color={theme.colors.error} />
+            <Ionicons name="trash" size={24} color={theme.colors.error} />
             <Text className="text-base font-bold ml-2" style={{ color: theme.colors.error }}>
               Emergency Data Wipe
             </Text>
           </View>
           <Text className="text-sm" style={{ color: theme.colors.error }}>
-            Instantly delete all app data and alert HQ of potential security breach
+            Permanently delete all app data from this device
           </Text>
         </TouchableOpacity>
       </ScrollView>

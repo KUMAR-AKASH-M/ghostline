@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Alert, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useUser } from '../../contexts/UserContext';
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { profile, updateProfile } = useUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(profile);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -22,12 +25,29 @@ export const ProfileScreen: React.FC = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      const newProfileImage = result.assets[0].uri;
+      setEditedProfile({ ...editedProfile, profileImage: newProfileImage });
+      await updateProfile({ profileImage: newProfileImage });
     }
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateProfile(editedProfile);
+      setIsEditing(false);
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update profile');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedProfile(profile);
+    setIsEditing(false);
   };
 
   return (
@@ -37,27 +57,36 @@ export const ProfileScreen: React.FC = () => {
         className="px-6 pt-12 pb-6"
         style={{ backgroundColor: theme.colors.secondaryBg }}
       >
-        <View className="flex-row items-center">
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            className="mr-4"
-          >
-            <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
-          </TouchableOpacity>
-          <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-            Profile
-          </Text>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1">
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              className="mr-4"
+            >
+              <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
+              Profile
+            </Text>
+          </View>
+          {!isEditing && (
+            <TouchableOpacity onPress={() => setIsEditing(true)}>
+              <Text className="font-semibold" style={{ color: theme.colors.accent }}>
+                Edit
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
       <ScrollView className="flex-1">
         {/* Profile Header */}
         <View className="items-center py-8">
-          <TouchableOpacity onPress={pickImage}>
+          <TouchableOpacity onPress={isEditing ? pickImage : undefined}>
             <View
               className="w-32 h-32 rounded-full items-center justify-center mb-4"
               style={{
-                backgroundColor: profileImage ? 'transparent' : theme.colors.accent,
+                backgroundColor: editedProfile.profileImage ? 'transparent' : theme.colors.accent,
                 shadowColor: theme.colors.accent,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
@@ -65,25 +94,27 @@ export const ProfileScreen: React.FC = () => {
                 elevation: 8,
               }}
             >
-              {profileImage ? (
+              {editedProfile.profileImage ? (
                 <Image
-                  source={{ uri: profileImage }}
+                  source={{ uri: editedProfile.profileImage }}
                   className="w-32 h-32 rounded-full"
                 />
               ) : (
-                <Ionicons name="shield-checkmark" size={64} color="#FFFFFF" />
+                <Ionicons name="person" size={64} color="#FFFFFF" />
               )}
-              <View
-                className="absolute bottom-0 right-0 w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: theme.colors.accent }}
-              >
-                <Ionicons name="camera" size={20} color="#FFFFFF" />
-              </View>
+              {isEditing && (
+                <View
+                  className="absolute bottom-0 right-0 w-10 h-10 rounded-full items-center justify-center"
+                  style={{ backgroundColor: theme.colors.accent }}
+                >
+                  <Ionicons name="camera" size={20} color="#FFFFFF" />
+                </View>
+              )}
             </View>
           </TouchableOpacity>
           
           <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-            Capt. Miller
+            {editedProfile.name}
           </Text>
           <Text className="text-lg mt-2" style={{ color: theme.colors.textSecondary }}>
             Active Defense Personnel
@@ -104,7 +135,7 @@ export const ProfileScreen: React.FC = () => {
               Service ID / Army ID
             </Text>
             <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
-              DEF2025001
+              {editedProfile.serviceId}
             </Text>
           </View>
 
@@ -116,12 +147,21 @@ export const ProfileScreen: React.FC = () => {
               borderColor: theme.colors.border,
             }}
           >
-            <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
+            <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
               Full Name
             </Text>
-            <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
-              Captain John Miller
-            </Text>
+            {isEditing ? (
+              <TextInput
+                className="text-base font-semibold"
+                style={{ color: theme.colors.textPrimary }}
+                value={editedProfile.name}
+                onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
+              />
+            ) : (
+              <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
+                {editedProfile.name}
+              </Text>
+            )}
           </View>
 
           {/* Rank */}
@@ -132,12 +172,21 @@ export const ProfileScreen: React.FC = () => {
               borderColor: theme.colors.border,
             }}
           >
-            <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
+            <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
               Rank
             </Text>
-            <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
-              Captain
-            </Text>
+            {isEditing ? (
+              <TextInput
+                className="text-base font-semibold"
+                style={{ color: theme.colors.textPrimary }}
+                value={editedProfile.rank}
+                onChangeText={(text) => setEditedProfile({ ...editedProfile, rank: text })}
+              />
+            ) : (
+              <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
+                {editedProfile.rank}
+              </Text>
+            )}
           </View>
 
           {/* Unit */}
@@ -148,12 +197,21 @@ export const ProfileScreen: React.FC = () => {
               borderColor: theme.colors.border,
             }}
           >
-            <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
+            <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
               Unit
             </Text>
-            <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
-              5th Infantry Division
-            </Text>
+            {isEditing ? (
+              <TextInput
+                className="text-base font-semibold"
+                style={{ color: theme.colors.textPrimary }}
+                value={editedProfile.unit}
+                onChangeText={(text) => setEditedProfile({ ...editedProfile, unit: text })}
+              />
+            ) : (
+              <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
+                {editedProfile.unit}
+              </Text>
+            )}
           </View>
 
           {/* Phone Number */}
@@ -168,18 +226,35 @@ export const ProfileScreen: React.FC = () => {
               Phone Number
             </Text>
             <Text className="text-base font-semibold" style={{ color: theme.colors.textPrimary }}>
-              +91 98765 43210
+              {editedProfile.phone}
             </Text>
           </View>
 
-          <TouchableOpacity
-            className="py-4 rounded-lg mt-4"
-            style={{ backgroundColor: theme.colors.accent }}
-          >
-            <Text className="text-white text-center font-semibold text-lg">
-              Edit Profile
-            </Text>
-          </TouchableOpacity>
+          {isEditing && (
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                className="flex-1 py-4 rounded-lg border"
+                style={{
+                  backgroundColor: 'transparent',
+                  borderColor: theme.colors.border,
+                }}
+                onPress={handleCancel}
+              >
+                <Text className="text-center font-semibold" style={{ color: theme.colors.textSecondary }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-1 py-4 rounded-lg"
+                style={{ backgroundColor: theme.colors.accent }}
+                onPress={handleSave}
+              >
+                <Text className="text-white text-center font-semibold text-lg">
+                  Save Changes
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

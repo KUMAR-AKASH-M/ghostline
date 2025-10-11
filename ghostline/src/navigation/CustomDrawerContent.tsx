@@ -14,6 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { SecureStorage } from '../services/security/SecureStorage';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 interface DrawerItem {
   label: string;
@@ -23,6 +25,8 @@ interface DrawerItem {
 
 export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props) => {
   const { theme, isDark } = useTheme();
+  const { profile } = useUser();
+  const navigation = useNavigation<any>();
   
   const drawerItems: DrawerItem[] = [
     { label: 'Profile', icon: 'person-outline', route: 'Profile' },
@@ -44,9 +48,26 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
           style: 'destructive',
           onPress: async () => {
             try {
+              // Clear all secure storage
               await SecureStorage.clearAll();
-              // Navigation will automatically redirect to login screen
-              // due to authentication state change
+              
+              // Clear AsyncStorage
+              const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+              await AsyncStorage.clear();
+              
+              Alert.alert('Logged Out', 'You have been successfully logged out', [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    // Navigation will automatically redirect to login
+                    // because authentication state is cleared
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'Login' }],
+                    });
+                  },
+                },
+              ]);
             } catch (error) {
               Alert.alert('Error', 'Failed to logout. Please try again.');
             }
@@ -65,7 +86,7 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
           <View
             className="w-20 h-20 rounded-full items-center justify-center mb-4"
             style={{
-              backgroundColor: theme.colors.accent,
+              backgroundColor: profile.profileImage ? 'transparent' : theme.colors.accent,
               shadowColor: theme.colors.accent,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
@@ -73,14 +94,21 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
               elevation: 8,
             }}
           >
-            <Ionicons name="shield-checkmark" size={40} color="#FFFFFF" />
+            {profile.profileImage ? (
+              <Image
+                source={{ uri: profile.profileImage }}
+                className="w-20 h-20 rounded-full"
+              />
+            ) : (
+              <Ionicons name="person" size={40} color="#FFFFFF" />
+            )}
           </View>
           
           <Text className="text-xl font-bold" style={{ color: theme.colors.textPrimary }}>
-            Capt. Miller
+            {profile.name}
           </Text>
           <Text className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
-            DEF2025001 • Captain
+            {profile.unit} • {profile.rank}
           </Text>
           
           <View className="flex-row mt-3">
@@ -131,15 +159,19 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
         </TouchableOpacity>
       </DrawerContentScrollView>
 
-      {/* Footer */}
+      {/* Footer with App Icon */}
       <View className="border-t px-6 py-4" style={{ borderTopColor: theme.colors.border }}>
-        <View className="flex-row items-center justify-center">
-          <Ionicons name="shield-checkmark" size={16} color={theme.colors.accent} />
-          <Text className="text-xs ml-2" style={{ color: theme.colors.textSecondary }}>
-            Secure Communication Platform
+        <View className="flex-row items-center justify-center mb-2">
+          <Image
+            source={require('../../assets/icon.png')}
+            className="w-6 h-6 mr-2"
+            resizeMode="contain"
+          />
+          <Text className="text-xs font-semibold" style={{ color: theme.colors.textPrimary }}>
+            Defense Secure
           </Text>
         </View>
-        <Text className="text-xs text-center mt-1" style={{ color: theme.colors.textSecondary }}>
+        <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
           Version 1.0.0 • Encrypted
         </Text>
       </View>

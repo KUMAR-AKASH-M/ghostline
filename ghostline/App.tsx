@@ -7,11 +7,12 @@ import React, { useEffect, useState } from 'react';
 import './global.css';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/contexts/ThemeContext';
+import { UserProvider } from './src/contexts/UserContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreenshotProtection, useAppBackgroundBlur } from './src/services/security/ScreenshotProtection';
 import { BiometricAuthService } from './src/services/security/BiometricAuth';
 import { AutoLockService } from './src/services/security/AutoLockService';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 function AppContent() {
@@ -50,7 +51,7 @@ function AppContent() {
         await AutoLockService.updateLastActiveTime();
       }
     } else {
-      // Fallback to seed phrase or other authentication
+      // Fallback authentication
       setIsLocked(false);
       await AutoLockService.updateLastActiveTime();
     }
@@ -61,8 +62,13 @@ function AppContent() {
   if (isLocked) {
     return (
       <View className="flex-1 bg-dark-primary items-center justify-center px-6">
+        {/* App Icon */}
         <View className="w-24 h-24 rounded-full bg-dark-accent items-center justify-center mb-8">
-          <Ionicons name="lock-closed" size={48} color="#FFFFFF" />
+          <Image
+            source={require('./assets/icon.png')}
+            className="w-20 h-20"
+            resizeMode="contain"
+          />
         </View>
         <Text className="text-white text-2xl font-bold mb-2">
           App Locked
@@ -94,7 +100,9 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <AppContent />
+        <UserProvider>
+          <AppContent />
+        </UserProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
