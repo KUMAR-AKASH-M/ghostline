@@ -53,7 +53,7 @@ export const AboutScreen: React.FC = () => {
             />
           </View>
           <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-            Defense Secure
+            Ghost Line
           </Text>
           <Text className="mt-2" style={{ color: theme.colors.textSecondary }}>
             Version 1.0.0 (Build 100)

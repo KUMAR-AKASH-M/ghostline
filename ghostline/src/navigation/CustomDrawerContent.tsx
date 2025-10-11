@@ -168,7 +168,7 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
             resizeMode="contain"
           />
           <Text className="text-xs font-semibold" style={{ color: theme.colors.textPrimary }}>
-            Defense Secure
+            Ghost Line
           </Text>
         </View>
         <Text className="text-xs text-center" style={{ color: theme.colors.textSecondary }}>
