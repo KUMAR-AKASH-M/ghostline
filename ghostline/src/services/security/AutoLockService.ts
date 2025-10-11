@@ -41,14 +41,22 @@ export class AutoLockService {
     this.lockCallback = callback;
   }
 
+  // Subscription reference for AppState event
+  private static appStateSubscription: { remove: () => void } | null = null;
+
   // Start monitoring
   static startMonitoring(): void {
-    AppState.addEventListener('change', this.handleAppStateChange);
+    if (!this.appStateSubscription) {
+      this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
+    }
   }
 
   // Stop monitoring
   static stopMonitoring(): void {
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    if (this.appStateSubscription) {
+      this.appStateSubscription.remove();
+      this.appStateSubscription = null;
+    }
   }
 
   private static handleAppStateChange = async (nextAppState: AppStateStatus) => {

@@ -3,7 +3,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { TabNavigator } from './TabNavigator';
 import { CustomDrawerContent } from './CustomDrawerContent';
 import { ProfileScreen } from '../screens/drawer/ProfileScreen';
-import { MentionsScreen } from '../screens/drawer/MentionsScreen';
 import { StarredMessagesScreen } from '../screens/drawer/StarredMessagesScreen';
 import { ThemeScreen } from '../screens/drawer/ThemeScreen';
 import { SettingsScreen } from '../screens/drawer/SettingsScreen';
@@ -26,7 +25,6 @@ export const DrawerNavigator: React.FC = () => {
     >
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
       <Drawer.Screen name="Profile" component={ProfileScreen} />
-      <Drawer.Screen name="Mentions" component={MentionsScreen} />
       <Drawer.Screen name="StarredMessages" component={StarredMessagesScreen} />
       <Drawer.Screen name="Theme" component={ThemeScreen} />
       <Drawer.Screen name="Security" component={SecurityScreen} />

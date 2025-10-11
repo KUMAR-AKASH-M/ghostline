@@ -1,20 +1,15 @@
 import { useEffect } from 'react';
-import { Platform, AppState } from 'react-native';
-import ScreenshotPrevent from 'react-native-screenshot-prevent';
+import { AppState } from 'react-native';
+import * as ScreenCapture from 'expo-screen-capture';
 
 // Enable screenshot protection globally
-export const enableScreenshotProtection = () => {
-  if (Platform.OS === 'android') {
-    ScreenshotPrevent.enabled(true);
-  }
-  // For iOS, it's handled at native level
+export const enableScreenshotProtection = async () => {
+  await ScreenCapture.preventScreenCaptureAsync();
 };
 
 // Disable screenshot protection
-export const disableScreenshotProtection = () => {
-  if (Platform.OS === 'android') {
-    ScreenshotPrevent.enabled(false);
-  }
+export const disableScreenshotProtection = async () => {
+  await ScreenCapture.allowScreenCaptureAsync();
 };
 
 // Hook to use screenshot protection
@@ -22,11 +17,13 @@ export const useScreenshotProtection = (enabled: boolean = true) => {
   useEffect(() => {
     if (enabled) {
       enableScreenshotProtection();
+    } else {
+      disableScreenshotProtection();
     }
 
     return () => {
       if (enabled) {
-        // Keep protection on even when component unmounts
+        disableScreenshotProtection();
       }
     };
   }, [enabled]);
@@ -44,8 +41,9 @@ export const useAppBackgroundBlur = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
-        // Blur logic is handled at native level
         enableScreenshotProtection();
+      } else if (nextAppState === 'active') {
+        disableScreenshotProtection();
       }
     });
 

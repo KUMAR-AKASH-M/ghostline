@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { IconButton } from '../../components/common/IconButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MOCK_PENDING_MEMBERS } from '../../services/mock/MockData';
+
+type NotificationFilter = 'all' | 'requests' | 'mentions' | 'updates';
 
 interface Notification {
   id: string;
@@ -41,6 +43,13 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   },
   {
     id: '4',
+    type: 'mention',
+    title: 'Mention in Team Delta',
+    message: 'Lt. Johnson mentioned you',
+    timestamp: '5 hours ago',
+  },
+  {
+    id: '5',
     type: 'update',
     title: 'System Update',
     message: 'New security features are now available',
@@ -51,6 +60,15 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
+  const [activeFilter, setActiveFilter] = useState<NotificationFilter>('all');
+
+  const filteredNotifications = MOCK_NOTIFICATIONS.filter(notification => {
+    if (activeFilter === 'all') return true;
+    return notification.type === activeFilter || 
+           (activeFilter === 'requests' && notification.type === 'request') ||
+           (activeFilter === 'mentions' && notification.type === 'mention') ||
+           (activeFilter === 'updates' && notification.type === 'update');
+  });
 
   const handleApprove = (notification: Notification) => {
     Alert.alert('Approved', `${notification.data?.name} has been added to the group`);
@@ -72,6 +90,27 @@ export const NotificationsScreen: React.FC = () => {
         return 'notifications';
     }
   };
+
+  const FilterButton: React.FC<{ filter: NotificationFilter; label: string }> = ({ filter, label }) => (
+    <TouchableOpacity
+      onPress={() => setActiveFilter(filter)}
+      className="px-4 py-2 rounded-full mr-2"
+      style={{
+        backgroundColor: activeFilter === filter ? theme.colors.accent : theme.colors.cardBg,
+        borderWidth: activeFilter === filter ? 0 : 1,
+        borderColor: theme.colors.border,
+      }}
+    >
+      <Text
+        className="font-semibold"
+        style={{
+          color: activeFilter === filter ? '#FFFFFF' : theme.colors.textSecondary,
+        }}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
 
   const renderNotification = ({ item }: { item: Notification }) => (
     <View
@@ -179,9 +218,34 @@ export const NotificationsScreen: React.FC = () => {
         </View>
       </View>
 
+      {/* Filters */}
+      <View
+        className="px-4 py-3"
+        style={{
+          backgroundColor: theme.colors.primaryBg,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border,
+        }}
+      >
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={[
+            { filter: 'all' as NotificationFilter, label: 'All' },
+            { filter: 'requests' as NotificationFilter, label: 'Requests' },
+            { filter: 'mentions' as NotificationFilter, label: 'Mentions' },
+            { filter: 'updates' as NotificationFilter, label: 'Updates' },
+          ]}
+          keyExtractor={(item) => item.filter}
+          renderItem={({ item }) => (
+            <FilterButton filter={item.filter} label={item.label} />
+          )}
+        />
+      </View>
+
       {/* Notifications List */}
       <FlatList
-        data={MOCK_NOTIFICATIONS}
+        data={filteredNotifications}
         keyExtractor={(item) => item.id}
         renderItem={renderNotification}
         contentContainerClassName="py-4"
