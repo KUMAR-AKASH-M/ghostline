@@ -226,7 +226,7 @@ export const CallsListScreen: React.FC = () => {
       </TouchableOpacity>
 
       {/* Test Call Button - Only in Dev Mode */}
-      {__DEV__ && (
+      {/* {__DEV__ && (
         <TouchableOpacity
           className="absolute bottom-28 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
           style={{
@@ -239,9 +239,9 @@ export const CallsListScreen: React.FC = () => {
           }}
           onPress={simulateIncomingCall}
         ><Text style={{ color: '#fff' }}>Test Call</Text>
-          {/* <Ionicons name="notifications" size={28} color="#ffffff" /> */}
+          { <Ionicons name="notifications" size={28} color="#ffffff" /> }
         </TouchableOpacity>
-      )}
+      )} */}
     </View>
   );
 };

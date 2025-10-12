@@ -1,37 +1,53 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-
-interface StarredMessage {
-  id: string;
-  message: string;
-  sender: string;
-  group: string;
-  timestamp: string;
-}
-
-const MOCK_STARRED: StarredMessage[] = [
-  {
-    id: '1',
-    message: 'Mission briefing scheduled for 1400 hours. All personnel must attend.',
-    sender: 'Capt. Miller',
-    group: 'Alpha Squad',
-    timestamp: 'Oct 5, 2025',
-  },
-  {
-    id: '2',
-    message: 'Remember to check equipment before deployment',
-    sender: 'You',
-    group: 'Team Delta',
-    timestamp: 'Oct 3, 2025',
-  },
-];
+import { getStarredMessages } from '../../services/mock/MockData';
 
 export const StarredMessagesScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
+  const starredMessages = getStarredMessages();
+
+  const navigateToChat = (chatId: string, chatName: string, messageId: string) => {
+    navigation.navigate('Chat', {
+      groupId: chatId,
+      groupName: chatName,
+      chatType: chatName.includes('Squad') || chatName.includes('Group') ? 'group' : 'direct',
+      highlightMessageId: messageId, // Pass message ID to highlight
+    });
+  };
+
+  const renderStarredMessage = ({ item }: any) => (
+    <TouchableOpacity
+      className="p-4 mb-3 rounded-lg border"
+      style={{
+        backgroundColor: theme.colors.cardBg,
+        borderColor: theme.colors.border,
+      }}
+      onPress={() => navigateToChat(item.chatId, item.chatName, item.id)}
+    >
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="font-semibold" style={{ color: theme.colors.accent }}>
+          {item.chatName}
+        </Text>
+        <Ionicons name="star" size={16} color={theme.colors.warning} />
+      </View>
+      
+      <Text className="font-medium mb-1" style={{ color: theme.colors.textPrimary }}>
+        {item.senderName}
+      </Text>
+      
+      <Text className="text-sm mb-2" style={{ color: theme.colors.textSecondary }}>
+        {item.text}
+      </Text>
+      
+      <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+        {item.timestamp}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.colors.primaryBg }}>
@@ -51,57 +67,22 @@ export const StarredMessagesScreen: React.FC = () => {
             <Text className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
               Starred Messages
             </Text>
-            <Text className="mt-1" style={{ color: theme.colors.textSecondary }}>
-              Important saved messages
+            <Text className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
+              {starredMessages.length} messages
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Starred Messages List */}
       <FlatList
-        data={MOCK_STARRED}
-        contentContainerClassName="p-4"
+        data={starredMessages}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className="p-4 rounded-lg mb-3"
-            style={{
-              backgroundColor: theme.colors.cardBg,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-            onPress={() =>
-              navigation.navigate('Chat', {
-                groupId: item.id,
-                groupName: item.group,
-              })
-            }
-          >
-            <View className="flex-row items-start mb-2">
-              <Ionicons name="star" size={20} color={theme.colors.warning} />
-              <View className="flex-1 ml-2">
-                <View className="flex-row justify-between mb-1">
-                  <Text className="font-semibold" style={{ color: theme.colors.textPrimary }}>
-                    {item.sender}
-                  </Text>
-                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                    {item.timestamp}
-                  </Text>
-                </View>
-                <Text style={{ color: theme.colors.textSecondary }}>
-                  {item.message}
-                </Text>
-                <Text className="text-xs mt-2" style={{ color: theme.colors.textSecondary }}>
-                  in {item.group}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={renderStarredMessage}
+        contentContainerClassName="p-6"
         ListEmptyComponent={
-          <View className="items-center py-12">
-            <Text className="text-lg" style={{ color: theme.colors.textSecondary }}>
+          <View className="items-center justify-center py-20">
+            <Ionicons name="star-outline" size={64} color={theme.colors.textSecondary} />
+            <Text className="text-lg mt-4" style={{ color: theme.colors.textSecondary }}>
               No starred messages
             </Text>
           </View>

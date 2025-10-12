@@ -3,28 +3,13 @@ import { View, Text, TouchableOpacity, FlatList, ScrollView } from 'react-native
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-
-interface Contact {
-  id: string;
-  name: string;
-  relation: string;
-  relationType: 'professional' | 'family';
-  status: 'online' | 'offline';
-}
-
-const MOCK_CONTACTS: Contact[] = [
-  { id: '1', name: 'Capt. Miller', relation: 'Captain', relationType: 'professional', status: 'online' },
-  { id: '2', name: 'Lt. Johnson', relation: 'Lieutenant', relationType: 'professional', status: 'online' },
-  { id: '3', name: 'Sgt. Thompson', relation: 'Sergeant', relationType: 'professional', status: 'offline' },
-  { id: '4', name: 'John Miller', relation: 'Father', relationType: 'family', status: 'online' },
-  { id: '5', name: 'Sarah Miller', relation: 'Mother', relationType: 'family', status: 'online' },
-];
+import { MOCK_CONTACTS } from '../services/mock/MockData';
 
 export const ContactsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
 
-  const renderContact = ({ item }: { item: Contact }) => (
+  const renderContact = ({ item }: { item: typeof MOCK_CONTACTS[0] }) => (
     <TouchableOpacity
       className="flex-row items-center p-4 rounded-lg mb-2"
       style={{
@@ -54,10 +39,18 @@ export const ContactsScreen: React.FC = () => {
         <View className="flex-row items-center mt-1">
           <View
             className="w-2 h-2 rounded-full mr-2"
-            style={{ backgroundColor: item.status === 'online' ? theme.colors.success : theme.colors.textSecondary }}
+            style={{
+              backgroundColor:
+                item.status === 'online'
+                  ? theme.colors.success
+                  : item.status === 'away'
+                  ? theme.colors.warning
+                  : theme.colors.textSecondary,
+            }}
           />
           <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-            {item.relation}
+            {item.rank || item.relation}
+            {item.unit ? ` • ${item.unit}` : ''}
           </Text>
         </View>
       </View>

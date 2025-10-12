@@ -3,21 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, FlatList } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-
-interface Contact {
-  id: string;
-  name: string;
-  relation: string;
-  status: 'online' | 'offline';
-}
-
-const MOCK_CONTACTS: Contact[] = [
-  { id: '1', name: 'Capt. Miller', relation: 'Captain', status: 'online' },
-  { id: '2', name: 'Lt. Johnson', relation: 'Lieutenant', status: 'online' },
-  { id: '3', name: 'Sgt. Thompson', relation: 'Sergeant', status: 'offline' },
-  { id: '4', name: 'Cpl. Davis', relation: 'Corporal', status: 'online' },
-  { id: '5', name: 'John Miller', relation: 'Father', status: 'online' },
-];
+import { MOCK_CONTACTS } from '../services/mock/MockData';
 
 export const SelectContactScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -28,7 +14,7 @@ export const SelectContactScreen: React.FC = () => {
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCallContact = (contact: Contact, isVideo: boolean) => {
+  const handleCallContact = (contact: typeof MOCK_CONTACTS[0], isVideo: boolean) => {
     navigation.replace('Call', {
       callId: contact.id,
       contactName: contact.name,
@@ -36,7 +22,7 @@ export const SelectContactScreen: React.FC = () => {
     });
   };
 
-  const renderContact = ({ item }: { item: Contact }) => (
+  const renderContact = ({ item }: { item: typeof MOCK_CONTACTS[0] }) => (
     <View
       className="flex-row items-center p-4 mb-2 rounded-lg"
       style={{
@@ -59,10 +45,17 @@ export const SelectContactScreen: React.FC = () => {
         <View className="flex-row items-center mt-1">
           <View
             className="w-2 h-2 rounded-full mr-2"
-            style={{ backgroundColor: item.status === 'online' ? theme.colors.success : theme.colors.textSecondary }}
+            style={{
+              backgroundColor:
+                item.status === 'online'
+                  ? theme.colors.success
+                  : item.status === 'away'
+                  ? theme.colors.warning
+                  : theme.colors.textSecondary,
+            }}
           />
           <Text className="text-sm" style={{ color: theme.colors.textSecondary }}>
-            {item.relation}
+            {item.rank || item.relation}
           </Text>
         </View>
       </View>

@@ -4,7 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { IconButton } from '../../components/common/IconButton';
 import { useTheme } from '../../contexts/ThemeContext';
-import { MOCK_PENDING_MEMBERS } from '../../services/mock/MockData';
+import {
+  MOCK_PENDING_REQUESTS,
+  getMentionedMessages,
+  approveContactRequest,
+  removePendingRequest,
+} from '../../services/mock/MockData';
 
 type NotificationFilter = 'all' | 'requests' | 'mentions' | 'updates';
 
@@ -17,65 +22,101 @@ interface Notification {
   data?: any;
 }
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    type: 'request',
-    title: 'New Member Request',
-    message: 'Sgt. Thompson wants to join Alpha Squad',
-    timestamp: '2 hours ago',
-    data: MOCK_PENDING_MEMBERS[0],
-  },
-  {
-    id: '2',
-    type: 'request',
-    title: 'New Member Request',
-    message: 'Cpl. Davis wants to join Alpha Squad',
-    timestamp: '1 day ago',
-    data: MOCK_PENDING_MEMBERS[1],
-  },
-  {
-    id: '3',
-    type: 'mention',
-    title: 'Mention in Alpha Squad',
-    message: 'Capt. Miller mentioned you in a message',
-    timestamp: '3 hours ago',
-  },
-  {
-    id: '4',
-    type: 'mention',
-    title: 'Mention in Team Delta',
-    message: 'Lt. Johnson mentioned you',
-    timestamp: '5 hours ago',
-  },
-  {
-    id: '5',
-    type: 'update',
-    title: 'System Update',
-    message: 'New security features are now available',
-    timestamp: '1 day ago',
-  },
-];
-
 export const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useTheme();
   const [activeFilter, setActiveFilter] = useState<NotificationFilter>('all');
+  const [pendingRequests, setPendingRequests] = useState(MOCK_PENDING_REQUESTS);
 
-  const filteredNotifications = MOCK_NOTIFICATIONS.filter(notification => {
+  const mentionedMessages = getMentionedMessages();
+
+  // Convert pending requests to notifications
+  const requestNotifications: Notification[] = pendingRequests.map(request => ({
+    id: request.id,
+    type: 'request',
+    title: 'New Contact Request',
+    message: `${request.name} wants to connect`,
+    timestamp: request.requestDate,
+    data: request,
+  }));
+
+  // Convert mentions to notifications
+  const mentionNotifications: Notification[] = mentionedMessages.map(msg => ({
+    id: `mention_${msg.id}`,
+    type: 'mention',
+    title: `Mention in ${msg.chatName}`,
+    message: `${msg.senderName}: ${msg.text}`,
+    timestamp: msg.timestamp,
+    data: {
+      chatId: msg.chatId,
+      chatName: msg.chatName,
+      messageId: msg.id,
+    },
+  }));
+
+  const updateNotifications: Notification[] = [
+    {
+      id: 'update1',
+      type: 'update',
+      title: 'System Update',
+      message: 'New security features are now available',
+      timestamp: '1 day ago',
+    },
+  ];
+
+  const allNotifications = [
+    ...requestNotifications,
+    ...mentionNotifications,
+    ...updateNotifications,
+  ];
+
+  const filterMap: Record<NotificationFilter, Notification['type'] | null> = {
+    all: null,
+    requests: 'request',
+    mentions: 'mention',
+    updates: 'update',
+  };
+
+  const filteredNotifications = allNotifications.filter(notification => {
     if (activeFilter === 'all') return true;
-    return notification.type === activeFilter || 
-           (activeFilter === 'requests' && notification.type === 'request') ||
-           (activeFilter === 'mentions' && notification.type === 'mention') ||
-           (activeFilter === 'updates' && notification.type === 'update');
+    return notification.type === filterMap[activeFilter];
   });
 
   const handleApprove = (notification: Notification) => {
-    Alert.alert('Approved', `${notification.data?.name} has been added to the group`);
+    const newContact = approveContactRequest(notification.id);
+    if (newContact) {
+      removePendingRequest(notification.id);
+      setPendingRequests(pendingRequests.filter(r => r.id !== notification.id));
+      Alert.alert('Approved', `${notification.data.name} has been added to your contacts`);
+    }
   };
 
   const handleReject = (notification: Notification) => {
-    Alert.alert('Rejected', `${notification.data?.name}'s request has been declined`);
+    Alert.alert(
+      'Reject Request',
+      `Reject ${notification.data.name}'s request?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: () => {
+            removePendingRequest(notification.id);
+            setPendingRequests(pendingRequests.filter(r => r.id !== notification.id));
+            Alert.alert('Rejected', 'Contact request has been declined');
+          },
+        },
+      ]
+    );
+  };
+
+  const handleMentionClick = (notification: Notification) => {
+    navigation.navigate('Chat', {
+      groupId: notification.data.chatId,
+      groupName: notification.data.chatName,
+      chatType: notification.data.chatName.includes('Squad') ||notification.data.chatName.includes('Group') ? 'group' : 'direct',
+      highlightMessageId: notification.data.messageId,
+    });
   };
 
   const getNotificationIcon = (type: string) => {
@@ -113,18 +154,15 @@ export const NotificationsScreen: React.FC = () => {
   );
 
   const renderNotification = ({ item }: { item: Notification }) => (
-    <View
+    <TouchableOpacity
       className="mx-4 mb-3 rounded-lg p-4"
       style={{
         backgroundColor: theme.colors.cardBg,
         borderWidth: 1,
         borderColor: theme.colors.border,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isDark ? 0.3 : 0.1,
-        shadowRadius: 4,
-        elevation: 3,
       }}
+      onPress={() => item.type === 'mention' && handleMentionClick(item)}
+      activeOpacity={item.type === 'mention' ? 0.7 : 1}
     >
       <View className="flex-row items-start">
         <View
@@ -134,7 +172,7 @@ export const NotificationsScreen: React.FC = () => {
           <Ionicons
             name={getNotificationIcon(item.type)}
             size={24}
-            color={item.type === 'request' ? theme.colors.accent : theme.colors.textSecondary}
+            color={item.type === 'request' || item.type === 'mention' ? theme.colors.accent : theme.colors.textSecondary}
           />
         </View>
 
@@ -149,7 +187,7 @@ export const NotificationsScreen: React.FC = () => {
           {item.type === 'request' && item.data && (
             <View className="mb-2 p-2 rounded-lg" style={{ backgroundColor: theme.colors.secondaryBg }}>
               <Text className="text-sm" style={{ color: theme.colors.textPrimary }}>
-                {item.data.rank} • {item.data.unit}
+                {item.data.rank || item.data.relation} • {item.data.unit || 'Family'}
               </Text>
             </View>
           )}
@@ -183,9 +221,21 @@ export const NotificationsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
+
+          {item.type === 'mention' && (
+            <TouchableOpacity
+              className="mt-2 py-2 px-3 rounded-lg self-start"
+              style={{ backgroundColor: theme.colors.accent }}
+              onPress={() => handleMentionClick(item)}
+            >
+              <Text className="text-white text-sm font-semibold">
+                View Message
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

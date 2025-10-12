@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { MOCK_GROUPS, MOCK_DIRECT_CHATS } from '../../services/mock/MockData';
 import { IconButton } from '../../components/common/IconButton';
 import { useTheme } from '../../contexts/ThemeContext';
+import { MOCK_CHATS } from '../../services/mock/MockData';
 
 type FilterType = 'all' | 'direct' | 'group';
 
@@ -15,12 +15,7 @@ export const ChatsListScreen: React.FC = () => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const allChats = [
-    ...MOCK_DIRECT_CHATS.map(chat => ({ ...chat, type: 'direct' as const })),
-    ...MOCK_GROUPS.map(group => ({ ...group, type: 'group' as const })),
-  ].sort((a, b) => 0);
-
-  const filteredChats = allChats.filter(chat => {
+  const filteredChats = MOCK_CHATS.filter(chat => {
     const matchesFilter = activeFilter === 'all' || chat.type === activeFilter;
     const matchesSearch = chat.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -211,6 +206,7 @@ export const ChatsListScreen: React.FC = () => {
         style={{
           backgroundColor: theme.colors.accent,
           elevation: 8,
+          shadowColor: theme.colors.accent,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.4,
           shadowRadius: 8,
