@@ -41,7 +41,7 @@ export const AppNavigator: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -80,6 +80,6 @@ export const AppNavigator: React.FC = () => {
           </>
         )}
       </Stack.Navigator>
-    </NavigationContainer>
+    
   );
 };

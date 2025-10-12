@@ -3,7 +3,7 @@ import 'react-native-get-random-values';
 import { Buffer } from 'buffer';
 global.Buffer = Buffer;
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './global.css';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/contexts/ThemeContext';
@@ -14,14 +14,104 @@ import { BiometricAuthService } from './src/services/security/BiometricAuth';
 import { AutoLockService } from './src/services/security/AutoLockService';
 import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { IncomingCallModal } from './src/components/modals/IncomingCallModal';
+import { CallNotificationService } from './src/services/call/CallNotificationService';
+import * as Notifications from 'expo-notifications';
+import { NavigationContainer } from '@react-navigation/native';
 
 function AppContent() {
   const [isLocked, setIsLocked] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<{
+    visible: boolean;
+    callerName: string;
+    callerImage?: string;
+    isVideoCall: boolean;
+    callId: string;
+  }>({
+    visible: false,
+    callerName: '',
+    isVideoCall: false,
+    callId: '',
+  });
+  const navigationRef = useRef<any>(null);
 
   useEffect(() => {
     // Enable global screenshot protection
     enableScreenshotProtection();
+
+    // Setup call notification categories
+    CallNotificationService.setupNotificationCategories();
+    CallNotificationService.requestPermissions();
+
+    // Listen for notification responses (when user taps on notification)
+    const responseSubscription = CallNotificationService.addNotificationResponseListener((response) => {
+      const { actionIdentifier, notification } = response;
+      const callData = notification.request.content.data;
+
+      if (callData.type === 'incoming_call') {
+        if (actionIdentifier === 'ACCEPT_CALL' || actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+          // Accept call
+          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          setIncomingCall({
+            visible: false,
+            callerName: callData.callerName,
+            isVideoCall: callData.isVideoCall,
+            callId: callData.callId,
+          });
+
+          // Navigate to call screen
+          navigationRef.current?.navigate('Call', {
+            callId: callData.callId,
+            contactName: callData.callerName,
+            isVideoCall: callData.isVideoCall,
+          });
+        } else if (actionIdentifier === 'DECLINE_CALL') {
+          // Decline call
+          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          console.log('Call declined');
+        }
+      } else if (callData.type === 'ongoing_call') {
+        if (actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+          // Return to call
+          navigationRef.current?.navigate('Call', {
+            callId: callData.callId,
+            contactName: callData.contactName,
+            isVideoCall: callData.isVideoCall,
+          });
+        } else if (actionIdentifier === 'END_CALL') {
+          // End call
+          CallNotificationService.cancelOngoingCallNotification();
+        } else if (actionIdentifier === 'MUTE_CALL') {
+          // Toggle mute (would need to communicate with call screen)
+          console.log('Mute toggled from notification');
+        } else if (actionIdentifier === 'SPEAKER_TOGGLE') {
+          // Toggle speaker
+          console.log('Speaker toggled from notification');
+        }
+      } else if (callData.type === 'outgoing_call') {
+        if (actionIdentifier === 'CANCEL_CALL') {
+          // Cancel outgoing call
+          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          navigationRef.current?.goBack();
+        }
+      }
+    });
+
+    // Listen for notifications received while app is in foreground
+    const receivedSubscription = CallNotificationService.addNotificationReceivedListener((notification) => {
+      const callData = notification.request.content.data;
+
+      if (callData.type === 'incoming_call') {
+        // Show incoming call modal
+        setIncomingCall({
+          visible: true,
+          callerName: callData.callerName,
+          isVideoCall: callData.isVideoCall,
+          callId: callData.callId,
+        });
+      }
+    });
 
     // Set up auto-lock callback
     AutoLockService.setLockCallback(() => {
@@ -33,6 +123,8 @@ function AppContent() {
 
     return () => {
       AutoLockService.stopMonitoring();
+      responseSubscription.remove();
+      receivedSubscription.remove();
     };
   }, []);
 
@@ -41,9 +133,9 @@ function AppContent() {
 
   const handleUnlock = async () => {
     setIsAuthenticating(true);
-    
+
     const biometricEnabled = await BiometricAuthService.isEnabled();
-    
+
     if (biometricEnabled) {
       const success = await BiometricAuthService.authenticate('Unlock Defense Secure');
       if (success) {
@@ -55,7 +147,7 @@ function AppContent() {
       setIsLocked(false);
       await AutoLockService.updateLastActiveTime();
     }
-    
+
     setIsAuthenticating(false);
   };
 
@@ -93,7 +185,43 @@ function AppContent() {
     );
   }
 
-  return <AppNavigator />;
+  // Simulate an incoming call for testing in development mode
+  function simulateIncomingCall() {
+    setIncomingCall({
+      visible: true,
+      callerName: 'Test Caller',
+      callerImage: undefined,
+      isVideoCall: false,
+      callId: 'test-call-id',
+    });
+  }
+
+  return (
+    <>
+      <NavigationContainer ref={navigationRef}>
+        <AppNavigator />
+      </NavigationContainer>
+
+      {/* Incoming Call Modal */}
+      <IncomingCallModal
+        visible={incomingCall.visible}
+        callerName={incomingCall.callerName}
+        callerImage={incomingCall.callerImage}
+        isVideoCall={incomingCall.isVideoCall}
+        onAccept={() => {
+          setIncomingCall({ ...incomingCall, visible: false });
+          navigationRef.current?.navigate('Call', {
+            callId: incomingCall.callId,
+            contactName: incomingCall.callerName,
+            isVideoCall: incomingCall.isVideoCall,
+          });
+        }}
+        onDecline={() => {
+          setIncomingCall({ ...incomingCall, visible: false });
+        }}
+      />
+    </>
+  );
 }
 
 export default function App() {

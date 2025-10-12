@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { IconButton } from '../../components/common/IconButton';
 import { useTheme } from '../../contexts/ThemeContext';
+import { CallNotificationService } from '../../services/call/CallNotificationService';
 
 interface Call {
   id: string;
@@ -58,6 +59,16 @@ export const CallsListScreen: React.FC = () => {
     call.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Test incoming call function
+  const simulateIncomingCall = async () => {
+    await CallNotificationService.showIncomingCallNotification({
+      callId: Date.now().toString(),
+      callerName: 'Capt. Miller',
+      isVideoCall: true,
+      timestamp: Date.now(),
+    });
+  };
+
   const getCallIcon = (call: Call) => {
     if (call.type === 'missed') {
       return <Ionicons name="call-outline" size={20} color={theme.colors.error} />;
@@ -78,6 +89,7 @@ export const CallsListScreen: React.FC = () => {
       onPress={() =>
         navigation.navigate('Call', {
           callId: item.id,
+          contactName: item.name,
           isVideoCall: item.callType === 'video',
         })
       }
@@ -116,6 +128,7 @@ export const CallsListScreen: React.FC = () => {
           onPress={() =>
             navigation.navigate('Call', {
               callId: item.id,
+              contactName: item.name,
               isVideoCall: item.callType === 'video',
             })
           }
@@ -202,6 +215,7 @@ export const CallsListScreen: React.FC = () => {
         style={{
           backgroundColor: theme.colors.accent,
           elevation: 8,
+          shadowColor: theme.colors.accent,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.4,
           shadowRadius: 8,
@@ -210,6 +224,24 @@ export const CallsListScreen: React.FC = () => {
       >
         <Ionicons name="call" size={28} color="#ffffff" />
       </TouchableOpacity>
+
+      {/* Test Call Button - Only in Dev Mode */}
+      {__DEV__ && (
+        <TouchableOpacity
+          className="absolute bottom-28 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+          style={{
+            backgroundColor: theme.colors.warning,
+            elevation: 8,
+            shadowColor: theme.colors.warning,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+          }}
+          onPress={simulateIncomingCall}
+        ><Text style={{ color: '#fff' }}>Test Call</Text>
+          {/* <Ionicons name="notifications" size={28} color="#ffffff" /> */}
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
