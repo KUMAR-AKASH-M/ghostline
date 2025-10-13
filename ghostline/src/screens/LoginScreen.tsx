@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../services/auth/AuthService';
@@ -23,7 +23,7 @@ export const LoginScreen: React.FC = () => {
     setIsLoading(true);
     try {
       const result = await AuthService.login({ armyId, phone });
-      
+
       navigation.navigate('OTPVerification', {
         armyId,
         phone,
@@ -47,7 +47,7 @@ export const LoginScreen: React.FC = () => {
       style={{ backgroundColor: theme.colors.primaryBg }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerClassName="flex-grow justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
       >
@@ -56,21 +56,26 @@ export const LoginScreen: React.FC = () => {
           <View
             className="w-24 h-24 rounded-full items-center justify-center mb-6"
             style={{
-              backgroundColor: theme.colors.accent,
-              shadowColor: theme.colors.accent,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: isDark ? 0.5 : 0.3,
-              shadowRadius: 16,
-              elevation: 10,
+              // backgroundColor: theme.colors.accent,
+              // shadowColor: theme.colors.accent,
+              // shadowOffset: { width: 0, height: 8 },
+              // shadowOpacity: isDark ? 0.5 : 0.3,
+              // shadowRadius: 16,
+              // elevation: 10,
             }}
           >
-            <Ionicons name="shield-checkmark" size={48} color="#FFFFFF" />
+            {/* <Ionicons name="shield-checkmark" size={48} color="#FFFFFF" /> */}
+            <Image
+              source={require('../../assets/icon.png')}
+              className="w-24 h-24 mr-2"
+              resizeMode="contain"
+            />
           </View>
           <Text
             className="text-4xl font-bold mb-2"
             style={{ color: theme.colors.textPrimary }}
           >
-            Defense Secure
+            Ghost Line
           </Text>
           <Text
             className="text-lg text-center"

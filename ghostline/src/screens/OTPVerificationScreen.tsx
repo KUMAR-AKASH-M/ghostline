@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../services/auth/AuthService';
@@ -10,7 +10,7 @@ export const OTPVerificationScreen: React.FC = () => {
   const route = useRoute<any>();
   const { theme, isDark } = useTheme();
   const { armyId, phone, otp: generatedOtp } = route.params;
-  
+
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +23,7 @@ export const OTPVerificationScreen: React.FC = () => {
     setIsLoading(true);
     try {
       const result = await AuthService.verifyLoginOTP(armyId, phone, otp);
-      
+
       navigation.navigate('SeedPhrase', {
         armyId,
         phone,
@@ -39,8 +39,8 @@ export const OTPVerificationScreen: React.FC = () => {
 
   return (
     <View className="flex-1 justify-center px-6" style={{ backgroundColor: theme.colors.primaryBg }}>
-      <TouchableOpacity 
-        onPress={() => navigation.goBack()} 
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
         className="mb-6 flex-row items-center"
       >
         <Ionicons name="arrow-back" size={24} color={theme.colors.accent} />
@@ -53,15 +53,20 @@ export const OTPVerificationScreen: React.FC = () => {
         <View
           className="w-20 h-20 rounded-full items-center justify-center mb-4"
           style={{
-            backgroundColor: theme.colors.accent,
-            shadowColor: theme.colors.accent,
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.3,
-            shadowRadius: 16,
-            elevation: 10,
+            // backgroundColor: theme.colors.accent,
+            // shadowColor: theme.colors.accent,
+            // shadowOffset: { width: 0, height: 8 },
+            // shadowOpacity: 0.3,
+            // shadowRadius: 16,
+            // elevation: 10,
           }}
         >
-          <Ionicons name="shield-checkmark" size={40} color="#FFFFFF" />
+          {/* <Ionicons name="shield-checkmark" size={40} color="#FFFFFF" /> */}
+          <Image
+            source={require('../../assets/icon.png')}
+            className="w-25 h-24 mr-2"
+            resizeMode="contain"
+          />
         </View>
       </View>
 
