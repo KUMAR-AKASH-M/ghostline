@@ -52,32 +52,32 @@ function AppContent() {
       if (callData.type === 'incoming_call') {
         if (actionIdentifier === 'ACCEPT_CALL' || actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
           // Accept call
-          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          CallNotificationService.cancelOngoingCallNotification();
           setIncomingCall({
             visible: false,
-            callerName: callData.callerName,
-            isVideoCall: callData.isVideoCall,
-            callId: callData.callId,
+            callerName: typeof callData.callerName === 'string' ? callData.callerName : '',
+            isVideoCall: typeof callData.isVideoCall === 'boolean' ? callData.isVideoCall : false,
+            callId: typeof callData.callId === 'string' ? callData.callId : '',
           });
 
           // Navigate to call screen
           navigationRef.current?.navigate('Call', {
-            callId: callData.callId,
+            callId: typeof callData.callId === 'string' ? callData.callId : '',
             contactName: callData.callerName,
-            isVideoCall: callData.isVideoCall,
+            isVideoCall: typeof callData.isVideoCall === 'boolean' ? callData.isVideoCall : false,
           });
         } else if (actionIdentifier === 'DECLINE_CALL') {
           // Decline call
-          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          CallNotificationService.cancelOngoingCallNotification();
           console.log('Call declined');
         }
       } else if (callData.type === 'ongoing_call') {
         if (actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
           // Return to call
           navigationRef.current?.navigate('Call', {
-            callId: callData.callId,
+            callId: typeof callData.callId === 'string' ? callData.callId : '',
             contactName: callData.contactName,
-            isVideoCall: callData.isVideoCall,
+            isVideoCall: typeof callData.isVideoCall === 'boolean' ? callData.isVideoCall : false,
           });
         } else if (actionIdentifier === 'END_CALL') {
           // End call
@@ -92,7 +92,7 @@ function AppContent() {
       } else if (callData.type === 'outgoing_call') {
         if (actionIdentifier === 'CANCEL_CALL') {
           // Cancel outgoing call
-          CallNotificationService.cancelCallNotification(notification.request.identifier);
+          CallNotificationService.cancelOngoingCallNotification();
           navigationRef.current?.goBack();
         }
       }
@@ -106,9 +106,9 @@ function AppContent() {
         // Show incoming call modal
         setIncomingCall({
           visible: true,
-          callerName: callData.callerName,
-          isVideoCall: callData.isVideoCall,
-          callId: callData.callId,
+          callerName: typeof callData.callerName === 'string' ? callData.callerName : '',
+          isVideoCall: typeof callData.isVideoCall === 'boolean' ? callData.isVideoCall : false,
+          callId: typeof callData.callId === 'string' ? callData.callId : '',
         });
       }
     });
